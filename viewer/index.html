@@ -251,14 +251,18 @@
         ) ?? ["", ".webm"];
         const chunks = [];
         const name = `capture-${stamp()}${ext}`;
-        recorder = new MediaRecorder(stream, {
+        // Keep a local reference: `recorder` is nulled in stopCapture() before
+        // the async onstop fires.
+        const rec = new MediaRecorder(stream, {
           ...(mimeType ? { mimeType } : {}),
           videoBitsPerSecond: 8_000_000,
         });
-        recorder.ondataavailable = (e) => e.data.size && chunks.push(e.data);
-        recorder.onstop = () =>
-          save(new Blob(chunks, { type: recorder.mimeType }), name);
-        recorder.start(1000);
+        rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+        rec.onstop = () => save(new Blob(chunks, { type: rec.mimeType }), name);
+        rec.onerror = (e) =>
+          (statusEl.textContent = `Recording error: ${e.error?.message ?? e}`);
+        rec.start(1000);
+        recorder = rec;
         recordStart = performance.now();
         captureBtn.classList.add("recording");
         recordTimer = setInterval(() => {
