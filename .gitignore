@@ -1,0 +1,4 @@
+.DS_Store
+
+# Camera captures and snapshots saved by viewer/server.py (large, personal)
+data/
