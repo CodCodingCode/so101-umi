@@ -15,7 +15,8 @@ Ci = np.linalg.inv(Mc); FX = 543.0
 def proj(v):
     pc = trimesh.transform_points(np.atleast_2d(v), Ci); z = pc[:, 2]
     return np.c_[FX * pc[:, 0] / z + 320, FX * pc[:, 1] / z + 240], z
-patches = json.load(open(f"{OUT}/patches.json"))
+import os
+patches = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "finger_tag_patches.json")))
 # tag squares: centred on each visible patch, in its plane, edges along x and along the finger
 tags = {}
 for nm in ['fixed', 'moving']:

@@ -6,7 +6,7 @@ model, picks the better one, and writes an ORB-SLAM3 settings YAML plus a JSON
 report and visual check images.
 
 Usage:
-  uv run --with opencv-python --with numpy calibration/calibrate.py data/capture.mp4 \
+  uv run --with "opencv-python<5" --with numpy calibration/calibrate.py data/capture.mp4 \
       [--cols 9 --rows 6 --square-mm 25 --max-views 40 --name innomaker]
 
 Intrinsics are only valid for the resolution the video was recorded at.
@@ -76,8 +76,7 @@ def select_diverse(found, size, max_views):
     return [found[i] for i in sorted(chosen)]
 
 
-def calibrate_pinhole(obj, img, size):
-    flags = 0
+def calibrate_pinhole(obj, img, size, flags=0):
     rms, K, D, rvecs, tvecs = cv2.calibrateCamera(obj, img, size, None, None, flags=flags)
     errs = []
     for o, i, r, t in zip(obj, img, rvecs, tvecs):
@@ -89,9 +88,13 @@ def calibrate_pinhole(obj, img, size):
 def calibrate_fisheye(obj, img, size):
     obj_f = [o.reshape(-1, 1, 3).astype(np.float64) for o in obj]
     img_f = [i.reshape(-1, 1, 2).astype(np.float64) for i in img]
-    # Constant names differ across OpenCV builds (cv2.fisheye.X vs cv2.fisheye_X).
+    # Constant location differs across OpenCV versions:
+    # 4.x: cv2.fisheye.X or cv2.fisheye_X; 5.x: cv2.X.
     def const(name):
-        return getattr(cv2.fisheye, name, None) or getattr(cv2, f"fisheye_{name}")
+        for ns, attr in ((cv2.fisheye, name), (cv2, f"fisheye_{name}"), (cv2, name)):
+            if hasattr(ns, attr):
+                return getattr(ns, attr)
+        raise AttributeError(name)
 
     flags = const("CALIB_RECOMPUTE_EXTRINSIC") | const("CALIB_FIX_SKEW")
     crit = (cv2.TERM_CRITERIA_COUNT + cv2.TERM_CRITERIA_EPS, 200, 1e-9)
@@ -101,6 +104,36 @@ def calibrate_fisheye(obj, img, size):
         p, _ = cv2.fisheye.projectPoints(o, r, t, K, D)
         errs.append(float(np.sqrt(np.mean(np.sum((p.reshape(-1, 2) - i.reshape(-1, 2)) ** 2, axis=1)))))
     return rms, K, D.ravel(), errs
+
+
+def calibrate_pinhole_no_tangent(obj, img, size):
+    return calibrate_pinhole(obj, img, size, flags=cv2.CALIB_ZERO_TANGENT_DIST)
+
+
+def heldout_error(model, K, D, views, objp):
+    """Median / p90 reprojection error on views NOT used for fitting.
+
+    Each view's board pose is solved with the candidate intrinsics, so this
+    measures how well the intrinsics generalize rather than how well they fit.
+    """
+    errs = []
+    for v in views:
+        c = v["corners"].astype(np.float64).reshape(-1, 1, 2)
+        if model == "fisheye":
+            und = cv2.fisheye.undistortPoints(c, K, D)
+        else:
+            und = cv2.undistortPoints(c, K, D)
+        ok, r, t = cv2.solvePnP(objp, und, np.eye(3), None)
+        if not ok:
+            continue
+        if model == "fisheye":
+            p, _ = cv2.fisheye.projectPoints(objp.reshape(-1, 1, 3).astype(np.float64), r, t, K, D)
+        else:
+            p, _ = cv2.projectPoints(objp, r, t, K, D)
+        errs.append(np.sqrt(np.mean(np.sum((p.reshape(-1, 2) - c.reshape(-1, 2)) ** 2, axis=1))))
+    if not errs:
+        return float("inf"), float("inf")
+    return float(np.median(errs)), float(np.percentile(errs, 90))
 
 
 def robust(fn, obj, img, size, label):
@@ -169,7 +202,7 @@ def undistort_image(frame, model, K, D, path):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("video")
+    ap.add_argument("videos", nargs="+", help="one or more checkerboard videos (same camera + resolution)")
     ap.add_argument("--cols", type=int, default=9, help="inner corners across")
     ap.add_argument("--rows", type=int, default=6, help="inner corners down")
     ap.add_argument("--square-mm", type=float, default=25.0)
@@ -181,31 +214,53 @@ def main():
     args = ap.parse_args()
 
     pattern = (args.cols, args.rows)
-    print(f"Scanning {args.video} for {args.cols}x{args.rows} inner corners…")
-    found, size, fps, scanned = detect(args.video, pattern, args.candidates, args.min_sharpness)
-    print(f"  board found in {len(found)}/{scanned} sampled frames, image {size[0]}x{size[1]}")
+    found, size, fps, scanned = [], None, None, 0
+    for vi, path in enumerate(args.videos):
+        print(f"Scanning {path} for {args.cols}x{args.rows} inner corners…")
+        f, s, r, n = detect(path, pattern, args.candidates, args.min_sharpness)
+        print(f"  board found in {len(f)}/{n} sampled frames, image {s[0]}x{s[1]}")
+        if size is not None and s != size:
+            raise SystemExit(f"{path} is {s[0]}x{s[1]} but earlier videos are {size[0]}x{size[1]}; "
+                             "calibrate each resolution separately.")
+        size, fps, scanned = s, fps or r, scanned + n
+        for d in f:
+            d["video"] = vi
+        found += f
     if len(found) < 10:
         raise SystemExit("Too few detections (<10). Check --cols/--rows, lighting, and focus.")
 
     views = select_diverse(found, size, args.max_views)
+    chosen_ids = {id(v) for v in views}
+    holdout = [v for v in found if id(v) not in chosen_ids] or found
     objp = np.zeros((args.cols * args.rows, 3), np.float32)
     objp[:, :2] = np.mgrid[0:args.cols, 0:args.rows].T.reshape(-1, 2) * (args.square_mm / 1000.0)
     obj = [objp] * len(views)
     img = [v["corners"].astype(np.float32) for v in views]
-    print(f"Calibrating with {len(views)} diverse views…")
+    print(f"Calibrating with {len(views)} diverse views; validating on {len(holdout)} held-out views…")
 
-    results = {"pinhole": robust(calibrate_pinhole, obj, img, size, "pinhole")}
-    try:
-        results["fisheye"] = robust(calibrate_fisheye, obj, img, size, "fisheye")
-    except Exception as e:  # fisheye fit can diverge with few/poor views
-        print(f"  fisheye   failed: {e}")
+    candidates = [("pinhole", "pinhole", calibrate_pinhole),
+                  ("pinhole_no_tangent", "pinhole", calibrate_pinhole_no_tangent),
+                  ("fisheye", "fisheye", calibrate_fisheye)]
+    results = {}
+    for name, kind, fn in candidates:
+        try:
+            r = robust(fn, obj, img, size, name)
+        except Exception as e:  # fisheye fit can diverge with few/poor views
+            print(f"  {name} failed: {e}")
+            continue
+        r["kind"] = kind
+        r["heldout_median"], r["heldout_p90"] = heldout_error(kind, r["K"], r["D"], holdout, objp)
+        print(f"  {'':9s} held-out median {r['heldout_median']:.3f}px  p90 {r['heldout_p90']:.3f}px")
+        results[name] = r
 
-    # Prefer pinhole unless fisheye is clearly better (pinhole is simpler and better supported).
-    model = "pinhole"
-    if "fisheye" in results and results["fisheye"]["rms"] < 0.85 * results["pinhole"]["rms"]:
-        model = "fisheye"
-    best = results[model]
+    # Pick by held-out error (generalization), not by in-sample RMS, which
+    # rewards overfitting when parts of the image have no board coverage.
+    model_name = min(results, key=lambda m: (results[m]["heldout_median"], results[m]["heldout_p90"]))
+    best = results[model_name]
+    model = best["kind"]
     K, D = best["K"], best["D"]
+    if model == "pinhole":
+        D = np.asarray(D, dtype=np.float64).ravel()[:5]
     w, h = size
     hfov = np.degrees(2 * np.arctan(w / (2 * K[0, 0])))
     vfov = np.degrees(2 * np.arctan(h / (2 * K[1, 1])))
@@ -216,7 +271,7 @@ def main():
     yaml_path = out / f"{stem}_orbslam3.yaml"
     write_orbslam_yaml(yaml_path, model, K, D, size, fps)
     report = {
-        "video": str(args.video),
+        "videos": [str(v) for v in args.videos],
         "image_size": [w, h],
         "fps": fps,
         "pattern_inner_corners": list(pattern),
@@ -225,19 +280,25 @@ def main():
         "frames_with_board": len(found),
         "views_used": len(best["kept"]),
         "model": model,
+        "model_variant": model_name,
         "rms_px": best["rms"],
+        "heldout_median_px": best["heldout_median"],
+        "heldout_p90_px": best["heldout_p90"],
         "K": K.tolist(),
         "D": D.tolist(),
         "approx_fov_deg": {"horizontal": round(float(hfov), 1), "vertical": round(float(vfov), 1)},
-        "all_models": {m: {"rms_px": r["rms"], "K": r["K"].tolist(), "D": r["D"].tolist()} for m, r in results.items()},
-        "source_frames": [views[i]["frame"] for i in best["kept"]],
+        "all_models": {m: {"rms_px": r["rms"], "heldout_median_px": r["heldout_median"],
+                           "heldout_p90_px": r["heldout_p90"], "K": r["K"].tolist(),
+                           "D": np.asarray(r["D"]).ravel().tolist()} for m, r in results.items()},
+        "source_frames": [[views[i]["video"], views[i]["frame"]] for i in best["kept"]],
     }
     (out / f"{stem}.json").write_text(json.dumps(report, indent=2))
     coverage_image([views[i] for i in best["kept"]], size, out / f"{stem}_coverage.png")
     sample = max(views, key=lambda v: v["sharpness"])["image"]
     undistort_image(sample, model, K, D, out / f"{stem}_undistort_check.png")
 
-    print(f"\nModel: {model}   RMS reprojection error: {best['rms']:.3f} px")
+    print(f"\nModel: {model_name}   RMS {best['rms']:.3f} px   "
+          f"held-out median {best['heldout_median']:.3f} px / p90 {best['heldout_p90']:.3f} px")
     print(f"fx={K[0, 0]:.2f} fy={K[1, 1]:.2f} cx={K[0, 2]:.2f} cy={K[1, 2]:.2f}")
     print(f"D={np.array2string(D, precision=5)}")
     print(f"Approx FOV: {hfov:.1f}° x {vfov:.1f}°")

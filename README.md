@@ -16,7 +16,8 @@ follower. Also includes a gripper for kinesthetic teaching on an SO-101 leader a
   problem and masking, grip force, kinesthetic teaching, and the arm's limits.
 - **What to print:** [`cad/README.md`](cad/README.md)
 - **Kinesthetic teaching on a leader arm:** [`cad/kinesthetic_leader/README.md`](cad/kinesthetic_leader/README.md)
-- **Camera viewer:** [`viewer/README.md`](viewer/README.md)
+- **Camera viewer and UMI Studio:** [`viewer/README.md`](viewer/README.md)
+- **How a handheld demo becomes a real-arm motion (every step):** [`umi/README.md`](umi/README.md#the-full-process-handheld-demo--real-arm)
 
 ## Folders
 
@@ -25,8 +26,10 @@ follower. Also includes a gripper for kinesthetic teaching on an SO-101 leader a
 | `cad/`                    | Printable STLs for the handheld (handle, two jaw-with-loop parts, camera mount, fit-test coupon), the ArUco tag sheet PDF, renders, a 3D preview (`.glb`) and the CAD check results        |
 | `cad/kinesthetic_leader/` | The 3 parts that turn an SO-101 leader arm into a hand-guided arm with a real gripper and wrist camera, plus an offline 3D viewer                                                          |
 | `cad/src/`                | Python scripts that build the parts, run the checks and make the tag sheet                                                                                                                 |
-| `stock_umi/`              | The original Stanford UMI gripper for reference: its official Cura 3MF print files, the same parts as STLs, its tag PDFs and print settings. Doesn't fit the SO-101 as-is (see its README) |
+| `cad/stock_umi/`          | The original Stanford UMI gripper for reference: its official Cura 3MF print files, the same parts as STLs, its tag PDFs and print settings. Doesn't fit the SO-101 as-is (see its README) |
 | `calibration/`            | Printable checkerboards (9×6 inner corners, 25 mm squares, A4 and Letter) for camera calibration, and the script that makes them                                                           |
+| `sim/`                    | This repo's own copy of the SO-101 bench twin (pi_sim and the clamp `SqueezeEnv` as one `sim` package), used by the `umi/` conversions. See its README                                     |
+| `real/`                   | Runs a `umi/` plan on the real SO-101 rig: a dry-run check from the Mac, and a live replay a person starts at the rig. See its README                                                      |
 | `docs/`                   | The setup guide                                                                                                                                                                            |
 | `viewer/`                 | A browser page for viewing and recording the connected cameras                                                                                                                             |
 | `data/`                   | Captures saved by the viewer                                                                                                                                                               |

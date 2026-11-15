@@ -38,6 +38,9 @@ the robot keeps its stock parts.
 | `soumi_assembly_preview.glb`             | no                                      | Colored 3D assembly; opens in Quick Look                                                                              |
 | `soumi_preview.png`, `check_report.json` | no                                      | Renders and the clearance checks                                                                                      |
 
+[`stock_umi/`](stock_umi/) holds the original Stanford UMI gripper parts for reference. They don't
+fit the SO-101 as-is; see its README.
+
 All STLs are in mm. The official meshes come from TheRobotStudio/SO-ARM100 (Apache-2.0).
 
 ## Strength
@@ -80,7 +83,11 @@ All STLs are in mm. The official meshes come from TheRobotStudio/SO-ARM100 (Apac
 
 ## ArUco tags
 
-![tag placement](tag_placement_wrist_view.png)
+![finger tag placement](tag_placement_fingers.png)
+
+Finger tags (optional): ID 0 on the fixed jaw and ID 1 on the moving jaw, each on the flat top
+face of the finger (the side the wrist camera looks at), ~20 mm back from the tip. Same spots
+on the robot's jaws.
 
 What the real UMI does (from its code: `example/calibration/aruco_config.yaml`,
 `scripts/calibrate_gripper_range.py`, `umi/common/cv_util.py::get_gripper_width`):
@@ -99,6 +106,18 @@ On SO-UMI:
 | ID 1      | Moving jaw: same spot                                                                               | 8 mm                                                                            | Optional                                                            |
 | IDs 20–23 | The 30 mm pockets on the back cube (left, right, top, back faces), orientation printed on the sheet | **25 mm** tag on a 30 mm white sticker (fits the pocket; tracking size = 25 mm) | **Yes**: this is how the overhead camera tracks the handheld's pose |
 | ID 13     | Flat on the table, or a ChArUco board                                                               | 16 cm                                                                           | **Yes**: defines the table/world frame for the overhead camera      |
+
+![cube tag placement](tag_placement_cube.png)
+
+Cube tags, as you hold it (camera on top, jaws pointing away). The red line in the picture
+and the red arrow on the sheet mark each tag's top edge:
+
+- **ID 20:** right face (moving-jaw side), top edge toward the jaws
+- **ID 21:** left face (fixed-jaw side), top edge toward the jaws
+- **ID 22:** top face (camera side), top edge toward the jaws
+- **ID 23:** back face (toward you), top edge up
+
+A second handheld needs its own cube IDs (for example 24–27); they're not on the sheet yet.
 
 Notes:
 
@@ -162,4 +181,8 @@ Other scripts in `src/`:
 
 - `arm_sweep.py`: the arm-collision sweep described in `kinesthetic_leader/README.md` (also needs `mujoco`).
 - `tag_sheet.py OUT.pdf`: regenerates the tag sheet (also needs `opencv-contrib-python`).
-- `tag_view.py OUT_DIR TAG_MM`: regenerates `tag_placement_wrist_view.png` (also needs `opencv-contrib-python`).
+- `tag_view.py OUT_DIR TAG_MM`: writes `OUT_DIR/wrist_view_tags.png`, the wrist camera's view of the finger
+  tags (saved here as `tag_placement_wrist_view.png`; also needs `opencv-contrib-python`).
+- `tag_cube_view.py OUT_DIR`: regenerates `tag_placement_cube.png` (also needs `opencv-contrib-python`).
+- `finger_tag_view.py OUT_DIR`: regenerates `tag_placement_fingers.png` (also needs `opencv-contrib-python`).
+- `finger_tag_patches.json`: where the finger tags sit on the jaws (used by the two finger-tag scripts).

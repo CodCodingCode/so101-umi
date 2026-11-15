@@ -54,6 +54,11 @@ scale bar with a ruler.
 | ID 0      | Fixed jaw: top edge of the finger, ~20 mm back from the tip | 8 mm                               | Optional: the servo already measures width                  |
 | ID 1      | Moving jaw: same spot                                       | 8 mm                               | Optional                                                    |
 
+![cube tag placement](../cad/tag_placement_cube.png)
+
+Which cube face gets which tag, and which way up, is listed in
+[`../cad/README.md`](../cad/README.md#aruco-tags) and printed on the sheet.
+
 - If you use finger tags, put the same tags in the same spots on the **robot's** jaws too,
   so wrist images match (UMI does this).
 - Don't reuse IDs 0–19 on the cube; UMI's config reserves them.
@@ -65,9 +70,20 @@ scale bar with a ruler.
 ## 4. Cameras and calibration
 
 - **Same camera, same mount, same settings** on handheld and robot.
-- Record **640×480 MJPEG at 30 fps**. Raw YUV over USB 2.0 can drop frames.
-- **Calibrate the lens at exactly the mode you record in.** 640×480 is often a crop or a
-  different sensor mode, so a 1080p calibration won't carry over.
+- Record the **wrist cameras at 640×480 MJPEG, 30 fps**. Raw YUV over USB 2.0 can drop frames.
+- Record the **overhead camera at a higher resolution (1080p if it has it)**. It's a tracker,
+  measuring 25 mm tags about 1 m away. At 640×480 (focal length ≈ 543 px) a tag is only
+  ~14 px across, and the cube sits ~156 mm behind the jaw tip, so 1° of orientation noise
+  moves the computed tip ~2.7 mm. More pixels per tag means a steadier pose. Its resolution
+  doesn't need to match anything: at deployment the robot's pose comes from its joint angles.
+  - Check that the 1080p mode doesn't widen or crop the view. Hold the cube at working
+    distance and count tag pixels in each mode.
+  - Quick test: set the handheld still on the table, record ~10 s, and look at how much the
+    computed jaw tip jitters. Under ~1 mm is good.
+- Put each camera on its own USB port or controller. Three USB 2.0 webcams on one hub can fail
+  to start for lack of bandwidth.
+- **Calibrate each lens at exactly the mode you record in.** 640×480 is often a crop or a
+  different sensor mode, so a 1080p calibration won't carry over (and vice versa).
 - **Lock exposure and white balance** to the same values on both sides. Keep exposure short
   and the room bright: a cheap rolling shutter smears fast moves, and blurred tags mean
   frames with no pose.
@@ -109,6 +125,12 @@ you've found the real problem early.
 5. **Replay every demo on the follower** before training, to check the arm can keep up.
 
 ## 7. The overhead camera problem
+
+> **Recommended: use the overhead camera for tracking only.** The tag detector only looks for
+> the cube and table tags; your arms and body in the shot don't matter unless they cover the
+> cube. The policy is trained on the wrist cameras plus gripper poses (and, for two arms, the
+> pose between the grippers, as UMI does), and never sees an overhead image. Then nothing
+> below applies. Read on only if you want the overhead image as a policy input.
 
 The wrist camera is clean: the CAD check found the handle, the loops and your fingers are
 never visible in its 640×480 image. The overhead camera is the problem. During collection
