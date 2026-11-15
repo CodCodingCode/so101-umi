@@ -1,0 +1,49 @@
+{
+  "cam": "overhead",
+  "model": "pinhole",
+  "image_size": [
+    640,
+    480
+  ],
+  "K": [
+    [
+      544.6,
+      0,
+      282.4
+    ],
+    [
+      0,
+      544.6,
+      242.9
+    ],
+    [
+      0,
+      0,
+      1
+    ]
+  ],
+  "D": [
+    -0.450325,
+    0.276115,
+    -0.00024,
+    -8e-05,
+    -0.10492
+  ],
+  "world_pose": {
+    "pos": [
+      0.003913,
+      -0.183618,
+      0.525584
+    ],
+    "quat_wxyz": [
+      0.976579,
+      0.2149644,
+      0.009231,
+      0.0001769
+    ],
+    "frame": "pi_sim world: metres, origin midway between the arms on the table top, x across (left arm at -x), +y away from the arms, z up",
+    "convention": "MuJoCo camera: looks along -z, +y up"
+  },
+  "source": "sim/assets/so101_camera_rig.json, cameras.overhead (built from /Users/owner/Downloads/whatif/robots/so101/calibration/cameras (overhead: REFIT lens + pose))",
+  "note": "The rig's current overhead calibration (lens + world pose fitted together). Supersedes the older lens_overhead.json values (fx 571), which came from a scaled 480x360 preview."
+}

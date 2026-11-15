@@ -8,8 +8,8 @@ on 2026-11-14.
 > **This does not fit the SO-101 as-is.** UMI's robot side needs a parallel-jaw gripper
 > (the guide uses a Weiss WSG-50) on a 6–7 joint arm (UR5e or Franka), carrying a GoPro with a
 > fisheye lens add-on. The SO-101 has one swinging jaw, 5 joints and too little strength for a
-> GoPro at full reach. For the SO-101 use the parts in [`../cad/`](../cad/), which keep UMI's
-> method with the SO-101's own gripper and camera. See [`../docs/umi-setup.md`](../docs/umi-setup.md).
+> GoPro at full reach. For the SO-101 use the parts in [`cad/`](../), which keep UMI's
+> method with the SO-101's own gripper and camera. See [`docs/umi-setup.md`](../../docs/umi-setup.md).
 > These files are here for reference, or for a bigger arm with a parallel gripper.
 
 ![parts](parts_preview.png)

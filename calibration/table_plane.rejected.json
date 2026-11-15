@@ -1,0 +1,68 @@
+{
+  "capture": "2026-11-15T04-38-33-955Z",
+  "good": false,
+  "plane": {
+    "a": 0.12227546458333742,
+    "b": -0.11060105679173196,
+    "c_mm": 0.007688324879893154
+  },
+  "tilt_deg": 9.362,
+  "residual_max_mm": 0.26,
+  "touches": [
+    {
+      "t": [
+        38.29,
+        39.53
+      ],
+      "frames": 38,
+      "xyz_mm": [
+        26.1,
+        144.2,
+        -13.0
+      ],
+      "spread_mm": [
+        2.07,
+        3.9,
+        1.8
+      ],
+      "corrected_height_mm": -0.3
+    },
+    {
+      "t": [
+        39.6,
+        42.25
+      ],
+      "frames": 43,
+      "xyz_mm": [
+        25.6,
+        140.1,
+        -12.1
+      ],
+      "spread_mm": [
+        2.41,
+        3.83,
+        1.84
+      ],
+      "corrected_height_mm": 0.3
+    },
+    {
+      "t": [
+        53.17,
+        54.38
+      ],
+      "frames": 37,
+      "xyz_mm": [
+        -61.1,
+        79.0,
+        -16.2
+      ],
+      "spread_mm": [
+        3.4,
+        3.78,
+        2.49
+      ],
+      "corrected_height_mm": 0.0
+    }
+  ],
+  "note": "z_true = z_measured - (a*x + b*y + c), x/y/z in mm in tag 13's frame"
+}

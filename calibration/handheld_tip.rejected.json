@@ -1,0 +1,33 @@
+{
+  "capture": "2026-11-15T01-36-45-804Z",
+  "tip_in_gripper_mm": [
+    32.07,
+    -151.25,
+    -4.4
+  ],
+  "tip_sd_mm": [
+    15.62,
+    10.46,
+    10.04
+  ],
+  "pivot_in_table_mm": [
+    84.92,
+    11.67,
+    61.23
+  ],
+  "residual_rms_mm": 83.37,
+  "frames_used": 206,
+  "frames_multi_face": 206,
+  "rocking_median_deg": 51.6,
+  "rocking_max_deg": 81.0,
+  "cad_tip_mm": [
+    -7.9,
+    -0.22,
+    -98.13
+  ],
+  "good": false,
+  "warnings": [
+    "large residuals: the tip moved, or the cube poses are noisy",
+    "tip uncertain by > 3 mm on some axis"
+  ]
+}

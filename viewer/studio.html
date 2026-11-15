@@ -1,0 +1,1422 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UMI Studio</title>
+    <style>
+      :root {
+        --bg: #101113;
+        --panel: #18191c;
+        --panel2: #202226;
+        --fg: #ececec;
+        --muted: #9a9ca3;
+        --accent: #4ea1ff;
+        --border: #2e3036;
+        --ok: #43a047;
+        --warn: #f9a825;
+        --bad: #e53935;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          14px/1.45 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        display: grid;
+        grid-template-columns: 210px 1fr;
+        height: 100vh;
+      }
+      @media (max-width: 760px) {
+        body {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+        }
+        nav {
+          flex-direction: row;
+          overflow-x: auto;
+        }
+        nav .brand,
+        nav .foot {
+          display: none;
+        }
+      }
+      nav {
+        background: var(--panel);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        padding: 14px 10px;
+        gap: 4px;
+      }
+      .brand {
+        font-weight: 700;
+        font-size: 15px;
+        padding: 4px 10px 14px;
+      }
+      nav button {
+        text-align: left;
+        background: none;
+        border: 0;
+        color: var(--muted);
+        padding: 9px 12px;
+        border-radius: 8px;
+        font: inherit;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+      }
+      nav button:hover {
+        background: var(--panel2);
+        color: var(--fg);
+      }
+      nav button.active {
+        background: var(--panel2);
+        color: var(--fg);
+        font-weight: 600;
+      }
+      nav .foot {
+        margin-top: auto;
+        font-size: 12px;
+        color: var(--muted);
+        padding: 8px 10px;
+      }
+      nav .foot a {
+        color: var(--muted);
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+        display: inline-block;
+        flex: none;
+      }
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.warn {
+        background: var(--warn);
+      }
+      .dot.bad {
+        background: var(--bad);
+      }
+      main {
+        overflow: auto;
+        padding: 18px 22px;
+        min-width: 0;
+      }
+      section.tab {
+        display: none;
+      }
+      section.tab.active {
+        display: block;
+      }
+      h2 {
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      .sub {
+        color: var(--muted);
+        margin: 0 0 16px;
+      }
+      .cams {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      @media (max-width: 1000px) {
+        .cams {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        min-width: 0;
+      }
+      .card h3 {
+        margin: 0;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card .hint {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 2px 0 8px;
+      }
+      .frame {
+        background: #000;
+        border-radius: 8px;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .frame img,
+      .frame video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .camstat {
+        margin-top: 6px;
+        font-size: 13px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      .bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        margin: 16px 0;
+      }
+      button.big {
+        font: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        padding: 12px 26px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: #2a2c31;
+        color: var(--fg);
+        cursor: pointer;
+      }
+      button.big.rec {
+        background: #b71c1c;
+        border-color: #e53935;
+      }
+      button.big:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      button.small,
+      select {
+        font: inherit;
+        background: #2a2c31;
+        color: var(--fg);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 6px 11px;
+        cursor: pointer;
+      }
+      label {
+        color: var(--muted);
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .timer {
+        font-size: 22px;
+        font-variant-numeric: tabular-nums;
+        min-width: 70px;
+      }
+      .msg {
+        color: var(--muted);
+      }
+      .msg.err {
+        color: var(--bad);
+      }
+      /* episodes */
+      .eps {
+        display: grid;
+        grid-template-columns: 290px 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (max-width: 1000px) {
+        .eps {
+          grid-template-columns: 1fr;
+        }
+      }
+      .list {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        max-height: calc(100vh - 140px);
+        overflow-y: auto;
+      }
+      .item {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+      }
+      .item:hover {
+        background: var(--panel2);
+      }
+      .item.sel {
+        background: #22324a;
+      }
+      .item .t {
+        font-weight: 600;
+      }
+      .badge {
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .badge.ok {
+        color: var(--ok);
+        border-color: var(--ok);
+      }
+      .badge.warn {
+        color: var(--warn);
+        border-color: var(--warn);
+      }
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .fact {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+      .fact .k {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .fact .v {
+        font-size: 17px;
+        font-weight: 600;
+        margin-top: 2px;
+      }
+      .fact .d {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .fact.ok .v {
+        color: var(--ok);
+      }
+      .fact.warn .v {
+        color: var(--warn);
+      }
+      .fact.bad .v {
+        color: var(--bad);
+      }
+      .empty {
+        color: var(--muted);
+        padding: 40px;
+        text-align: center;
+      }
+      /* loading overlay */
+      #overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.72);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        padding: 16px;
+      }
+      #overlay.show {
+        display: flex;
+      }
+      .modal {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px 24px;
+        width: min(560px, 100%);
+      }
+      .steps {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0;
+      }
+      .steps li {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 7px 0;
+        color: var(--muted);
+      }
+      .steps li .ic {
+        width: 20px;
+        text-align: center;
+      }
+      .steps li.doing {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .steps li.done {
+        color: var(--ok);
+      }
+      .steps li.fail {
+        color: var(--bad);
+      }
+      .spin {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--accent);
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: s 0.8s linear infinite;
+      }
+      @keyframes s {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      pre.log {
+        background: #0b0c0e;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px;
+        max-height: 180px;
+        overflow: auto;
+        font-size: 11px;
+        color: #b9bcc4;
+        white-space: pre-wrap;
+      }
+      details summary {
+        cursor: pointer;
+        color: var(--muted);
+      }
+      .ok-txt {
+        color: var(--ok);
+      }
+      .warn-txt {
+        color: var(--warn);
+      }
+      .bad-txt {
+        color: var(--bad);
+      }
+      table.kv td {
+        padding: 3px 10px 3px 0;
+        vertical-align: top;
+      }
+      table.kv td:first-child {
+        color: var(--muted);
+        white-space: nowrap;
+      }
+    </style>
+    <script type="importmap">
+      { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+    </script>
+  </head>
+  <body>
+    <nav>
+      <div class="brand">UMI Studio</div>
+      <button data-tab="record" class="active">🎥 Record</button>
+      <button data-tab="episodes">
+        📂 Episodes <span class="badge" id="ep-count" hidden></span>
+      </button>
+      <button data-tab="run">
+        🤖 Run on robot <span class="dot" id="rig-dot"></span>
+      </button>
+      <div class="foot">Cameras and arms are on the rig PC (dzkchen).</div>
+    </nav>
+
+    <main>
+      <!-- ================= RECORD ================= -->
+      <section class="tab active" id="tab-record">
+        <h2>Record a demo</h2>
+        <p class="sub">
+          Both cameras record on the rig PC at full quality (640×480, 30 fps,
+          one clock). The pictures below are only a preview.
+        </p>
+        <div class="cams">
+          <div class="card">
+            <h3>
+              <span class="dot" id="d-umi"></span>Wrist camera
+              <span class="msg">on the handheld</span>
+            </h3>
+            <div class="hint">
+              Should show the two fingertips at the bottom.
+            </div>
+            <div class="frame">
+              <img id="pv-umi" alt="wrist camera preview" />
+            </div>
+            <div class="camstat" id="s-umi">connecting…</div>
+          </div>
+          <div class="card">
+            <h3>
+              <span class="dot" id="d-overhead"></span>Overhead camera
+              <span class="msg">above the table</span>
+            </h3>
+            <div class="hint">
+              Should show the table from above: tag 13, both arms, the box.
+            </div>
+            <div class="frame">
+              <img id="pv-overhead" alt="overhead camera preview" />
+            </div>
+            <div class="camstat" id="s-overhead">connecting…</div>
+          </div>
+        </div>
+        <div class="bar">
+          <button class="big" id="rec" disabled>● Record</button>
+          <span class="timer" id="timer"></span>
+          <label
+            title="After you stop, the recording is turned into a plan for this arm and shown in the sim automatically"
+          >
+            Make sim for
+            <select id="side">
+              <option value="right">right arm</option>
+              <option value="left">left arm</option>
+              <option value="both">both arms</option>
+            </select>
+          </label>
+          <label title="Preview only. Recordings are always full quality.">
+            Preview
+            <select id="pv">
+              <option value="w=320&q=60&fps=10">smooth</option>
+              <option value="w=640&q=85&fps=4">sharp</option>
+            </select>
+          </label>
+        </div>
+        <p class="msg" id="rec-msg">
+          Tip: start with tag 13 visible and the jaws resting on the table for 2
+          s.
+        </p>
+      </section>
+
+      <!-- ================= EPISODES ================= -->
+      <section class="tab" id="tab-episodes">
+        <h2>Episodes</h2>
+        <p class="sub">
+          Every recording. Pick one to watch the robot arm replay it in the sim,
+          next to the real video.
+        </p>
+        <div class="eps">
+          <div class="list" id="ep-list"><div class="empty">loading…</div></div>
+          <div id="ep-detail"><div class="empty">Select an episode.</div></div>
+        </div>
+      </section>
+
+      <!-- ================= RUN ON ROBOT ================= -->
+      <section class="tab" id="tab-run">
+        <h2>Run on the real robot</h2>
+        <p class="sub">
+          The arm replays a recording's plan. The overhead camera films it, and
+          a comparison (your UMI demo vs. the robot) is saved with the episode.
+        </p>
+        <div class="bar" style="margin-top: 0">
+          <label
+            >Recording
+            <select id="run-ep"></select
+          ></label>
+          <label
+            >Arm
+            <select id="run-arm"></select
+          ></label>
+          <span class="msg" id="run-cams"></span>
+        </div>
+        <div
+          class="eps"
+          style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)"
+        >
+          <div class="card">
+            <h3>The plan (sim)</h3>
+            <div class="hint">
+              What the arm will do. Check it looks right before running.
+            </div>
+            <div class="frame">
+              <video id="run-video" controls playsinline muted loop></video>
+            </div>
+            <div class="facts" id="run-facts"></div>
+          </div>
+          <div class="card" id="run-card">
+            <h3><span class="dot" id="run-dot"></span>Run it</h3>
+            <div class="hint" id="run-info"></div>
+            <p
+              class="msg"
+              id="run-pre"
+              style="
+                display: none;
+                color: var(--warn);
+                border: 1px solid var(--warn);
+                border-radius: 7px;
+                padding: 8px 10px;
+              "
+            ></p>
+            <label style="margin: 6px 0 10px; color: var(--fg)">
+              <input type="checkbox" id="run-atrig" /> I'm at the rig with a
+              hand on the power switch
+            </label>
+            <div class="bar" style="margin: 0 0 10px">
+              <button
+                class="big"
+                id="run-dry"
+                disabled
+                title="Uploads the plan and has the rig check every pose against the arm's real joint ranges and clearances. Nothing moves."
+              >
+                ✓ Dry run (check only)
+              </button>
+              <button class="big" id="run-go" disabled>
+                ▶ Real run (arm moves)
+              </button>
+              <button
+                class="big rec"
+                id="run-stop"
+                title="The arm folds back to rest and the motors turn off"
+              >
+                ■ STOP
+              </button>
+            </div>
+            <div
+              id="run-confirm"
+              style="
+                display: none;
+                gap: 8px;
+                align-items: center;
+                padding: 10px;
+                border: 1px solid var(--warn);
+                border-radius: 8px;
+                margin-bottom: 10px;
+              "
+            >
+              <span id="run-confirm-q"></span>
+              <input id="run-confirm-text" size="8" autocomplete="off" />
+              <button class="small" id="run-confirm-send">Start</button>
+              <button class="small" id="run-confirm-cancel">Cancel</button>
+            </div>
+            <p class="msg" id="run-msg">
+              Before anything moves, the rig checks every pose against the real
+              joint limits and clearances; then you confirm.
+            </p>
+            <details>
+              <summary>Details</summary>
+              <pre class="log" id="run-log"></pre>
+            </details>
+          </div>
+        </div>
+        <div class="card" style="margin-top: 14px">
+          <h3>Saved comparisons: UMI demo vs. robot</h3>
+          <div class="hint">
+            Left: the robot's run. Right: your demo. Green = your hand's path,
+            magenta = the robot's, grey = the plan.
+          </div>
+          <div id="run-cmp">
+            <div class="empty">No real runs of this recording yet.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ================= LOADING ================= -->
+    <div id="overlay">
+      <div class="modal">
+        <h2 id="ov-title">Making the sim…</h2>
+        <div class="msg" id="ov-sub"></div>
+        <ul class="steps" id="ov-steps"></ul>
+        <details>
+          <summary>Details</summary>
+          <pre class="log" id="ov-log"></pre>
+        </details>
+        <div class="bar" style="margin-bottom: 0">
+          <button class="small" id="ov-hide">Hide (keeps running)</button>
+          <span class="msg" id="ov-elapsed"></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const get = (u) => fetch(u).then((r) => r.json());
+      const post = (u) => fetch(u, { method: "POST" }).then((r) => r.json());
+      const stamp = () => new Date().toISOString().replace(/[:.]/g, "-");
+      const fmtTs = (ts) => {
+        // 2026-11-15T02-43-09-992Z -> local time
+        const m = ts.match(/^(\d{4})-(\d\d)-(\d\d)T(\d\d)-(\d\d)-(\d\d)/);
+        if (!m) return ts;
+        const d = new Date(
+          Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]),
+        );
+        return d.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+      };
+      const store = {
+        get: (k, d) => {
+          try {
+            return localStorage.getItem(k) ?? d;
+          } catch {
+            return d;
+          }
+        },
+        set: (k, v) => {
+          try {
+            localStorage.setItem(k, v);
+          } catch {}
+        },
+      };
+
+      // ---------------- tabs
+      function show(tab) {
+        document
+          .querySelectorAll("nav button[data-tab]")
+          .forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+        document
+          .querySelectorAll("section.tab")
+          .forEach((s) => s.classList.toggle("active", s.id === `tab-${tab}`));
+        store.set("studio.tab", tab);
+        setPreviews(tab);
+        if (tab === "episodes") loadEpisodes();
+        if (tab === "run") loadRun();
+      }
+      document
+        .querySelectorAll("nav button[data-tab]")
+        .forEach((b) => (b.onclick = () => show(b.dataset.tab)));
+
+      // previews only stream on the visible tab (the link to the rig is slow)
+      function setPreviews(tab) {
+        const pv = $("pv").value;
+        $("pv-umi").src = tab === "record" ? `/rig/cam/umi.mjpg?${pv}` : "";
+        $("pv-overhead").src =
+          tab === "record" ? `/rig/cam/overhead.mjpg?${pv}` : "";
+      }
+      $("pv").value = store.get("studio.pv", $("pv").value);
+      $("pv").onchange = () => {
+        store.set("studio.pv", $("pv").value);
+        setPreviews("record");
+      };
+      $("side").value = store.get("studio.side", "right");
+      $("side").onchange = () => store.set("studio.side", $("side").value);
+
+      // ---------------- camera status (shared by Record + Rig check)
+      let rigStatus = null;
+      function camWords(c) {
+        if (!c) return ["bad", "not reachable"];
+        if (c.error) return ["bad", `problem: ${c.error}`];
+        if (c.fps >= 25 && (c.age_ms ?? 1e9) < 500)
+          return ["ok", `live · ${c.fps.toFixed(0)} fps`];
+        if (c.fps > 0) return ["warn", `slow · ${c.fps.toFixed(1)} fps`];
+        return ["bad", "no picture"];
+      }
+      async function pollStatus() {
+        try {
+          const s = await get("/rig/api/status");
+          if (s.error) throw new Error(s.error);
+          rigStatus = s;
+          for (const cam of ["umi", "overhead"]) {
+            const [cls, txt] = camWords(s.cameras[cam]);
+            $(`d-${cam}`).className = `dot ${cls}`;
+            $(`s-${cam}`).textContent = recording
+              ? `${txt} · ${s.cameras[cam].frames} frames recorded`
+              : txt;
+          }
+          const allOk = ["umi", "overhead"].every(
+            (c) => camWords(s.cameras[c])[0] === "ok",
+          );
+          $("rig-dot").className = `dot ${allOk ? "ok" : "warn"}`;
+          $("run-cams").textContent =
+            `Overhead camera: ${camWords(s.cameras.overhead)[1]} (films the run)`;
+          $("rec").disabled = !recording && !allOk;
+        } catch (e) {
+          rigStatus = null;
+          for (const cam of ["umi", "overhead"]) {
+            $(`d-${cam}`).className = "dot bad";
+            $(`s-${cam}`).textContent = "rig not reachable";
+          }
+          $("rig-dot").className = "dot bad";
+          $("rec").disabled = !recording;
+        }
+      }
+
+      // ---------------- record
+      let recording = null;
+      $("rec").onclick = async () => {
+        $("rec").disabled = true;
+        if (!recording) {
+          const name = `capture-${stamp()}`;
+          const r = await post(
+            `/rig/record/start?name=${encodeURIComponent(name)}`,
+          );
+          if (r.error) {
+            $("rec-msg").textContent = `Could not start: ${r.error}`;
+            $("rec-msg").className = "msg err";
+          } else {
+            recording = { name, t0: Date.now() };
+            $("rec").textContent = "■ Stop";
+            $("rec").classList.add("rec");
+            $("rec-msg").className = "msg";
+            $("rec-msg").textContent = "Recording on the rig…";
+          }
+        } else {
+          const side = $("side").value;
+          const r = await post(`/rig/record/stop?auto=${side}`);
+          recording = null;
+          $("rec").textContent = "● Record";
+          $("rec").classList.remove("rec");
+          $("timer").textContent = "";
+          if (r.error) {
+            $("rec-msg").textContent = `Stop failed: ${r.error}`;
+            $("rec-msg").className = "msg err";
+          } else {
+            const c = r.cameras || {};
+            $("rec-msg").textContent =
+              `Saved ${fmtTs(r.name.replace("capture-", ""))} · ${r.duration_s}s · wrist ${c.umi?.frames} frames, overhead ${c.overhead?.frames} frames`;
+            if (r.auto && !r.auto.error) openOverlay(r.name, side);
+            else if (r.auto?.error) {
+              $("rec-msg").textContent +=
+                ` · not processed yet (${r.auto.error}); process it from Episodes`;
+            }
+          }
+        }
+        $("rec").disabled = false;
+      };
+      setInterval(() => {
+        if (recording) {
+          const s = Math.floor((Date.now() - recording.t0) / 1000);
+          $("timer").textContent =
+            `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+        }
+      }, 250);
+
+      // ---------------- processing overlay
+      const STEPS = [
+        [
+          "copy",
+          "Get the tracking from the rig",
+          (l) => /fetching the rig|live tracking|copying|on the Mac|copy complete/.test(l),
+        ],
+        [
+          "track",
+          "Turn it into the handle's path and the gripper",
+          (l) => /convert\.py/.test(l),
+        ],
+        [
+          "plan",
+          "Plan the robot arm (whole demo, optimized)",
+          (l) => /to_robot\.py/.test(l),
+        ],
+        [
+          "render",
+          "Prepare the 3D replay",
+          (l) => /browser replay|ffmpeg|libx264|done in/.test(l),
+        ],
+      ];
+      let ovTimer = null,
+        ovStart = 0,
+        ovFor = null;
+      let ovJobId = null;
+      function openOverlay(name, side, job) {
+        ovFor = { name, side };
+        ovJobId = job?.id ?? null;
+        ovStart = job?.started ? job.started * 1000 : Date.now(); // server start time survives a page reload
+        $("ov-title").textContent = "Making the sim…";
+        $("ov-sub").textContent =
+          `${fmtTs(name.replace("capture-", ""))} · ${side === "both" ? "both arms" : side + " arm"}. Usually under a minute.`;
+        $("overlay").classList.add("show");
+        clearInterval(ovTimer);
+        ovTimer = setInterval(pollJob, 1000);
+        pollJob();
+      }
+      $("ov-hide").onclick = () => {
+        $("overlay").classList.remove("show");
+        if (ovJobId != null) store.set("studio.ovHidden", ovJobId); // don't pop it back up on reload
+      };
+      async function pollJob() {
+        const j = await get("/umi/status");
+        const log = j.log || [];
+        if (ovJobId == null && j.id != null) {
+          // opened from a button: adopt the job the server just started
+          ovJobId = j.id;
+          if (j.started) ovStart = j.started * 1000;
+        }
+        let reached = -1;
+        log.forEach((l) =>
+          STEPS.forEach(([, , test], i) => {
+            if (test(l) && i > reached) reached = i;
+          }),
+        );
+        if (j.state === "done") reached = STEPS.length;
+        const pct = [...log].reverse().find((l) => /copying \d+%/.test(l));
+        $("ov-steps").innerHTML = STEPS.map(([k, label], i) => {
+          let cls = "",
+            ic = "○";
+          if (i < reached || j.state === "done") {
+            cls = "done";
+            ic = "✓";
+          } else if (i === Math.max(reached, 0) && j.state === "running") {
+            cls = "doing";
+            ic = '<span class="spin"></span>';
+          } else if (i === Math.max(reached, 0) && j.state === "error") {
+            cls = "fail";
+            ic = "✕";
+          }
+          const extra =
+            k === "copy" && pct && cls === "doing"
+              ? ` <span class="msg">(${pct.trim().replace(/^copying /, "")})</span>`
+              : "";
+          return `<li class="${cls}"><span class="ic">${ic}</span>${label}${extra}</li>`;
+        }).join("");
+        $("ov-log").textContent = log.slice(-60).join("\n");
+        const sec = Math.floor((Date.now() - ovStart) / 1000);
+        $("ov-elapsed").textContent =
+          `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")} elapsed`;
+        if (j.state === "done") {
+          clearInterval(ovTimer);
+          $("ov-title").textContent = "Done ✓";
+          const ep = j.result?.episode;
+          setTimeout(() => {
+            $("overlay").classList.remove("show");
+            show("episodes");
+            if (ep) selectEpisode(ep);
+          }, 900);
+        } else if (j.state === "error") {
+          clearInterval(ovTimer);
+          $("ov-title").textContent = "Something went wrong";
+          $("ov-sub").innerHTML =
+            `<span class="bad-txt">${(j.result?.error || "unknown error").slice(0, 300)}</span>`;
+          document.querySelector("#overlay details").open = true;
+        }
+      }
+
+      // ---------------- episodes
+      let selected = store.get("studio.episode", null);
+      async function loadEpisodes() {
+        const [mac, rig] = await Promise.all([
+          get("/umi/captures").catch(() => []),
+          get("/rig/api/recordings").catch(() => []),
+        ]);
+        const byTs = new Map();
+        for (const n of Array.isArray(rig) ? rig : []) {
+          if (!n.startsWith("capture-")) continue;
+          const ts = n.replace("capture-", "");
+          byTs.set(ts, { ts, name: n, onRig: true, onMac: false, plans: {} });
+        }
+        for (const c of mac) {
+          const e = byTs.get(c.ts) || { ts: c.ts, name: c.name, onRig: false };
+          Object.assign(e, {
+            onMac: true,
+            complete: c.complete,
+            plans: c.plans,
+          });
+          byTs.set(c.ts, e);
+        }
+        const eps = [...byTs.values()].sort((a, b) => (a.ts < b.ts ? 1 : -1));
+        $("ep-count").hidden = !eps.length;
+        $("ep-count").textContent = eps.length;
+        $("ep-list").innerHTML = eps.length
+          ? ""
+          : '<div class="empty">No recordings yet.</div>';
+        for (const e of eps) {
+          const sides = Object.entries(e.plans || {})
+            .filter(([, v]) => v)
+            .map(([s]) => s);
+          const badge = sides.length
+            ? `<span class="badge ok">sim ready: ${sides.join(" + ")}</span>`
+            : e.onMac
+              ? '<span class="badge warn">not processed</span>'
+              : '<span class="badge">on the rig only</span>';
+          const div = document.createElement("div");
+          div.className = "item" + (e.ts === selected ? " sel" : "");
+          div.innerHTML = `<div class="t">${fmtTs(e.ts)}</div><div>${badge}</div>`;
+          div.onclick = () => selectEpisode(e.ts, e);
+          $("ep-list").appendChild(div);
+        }
+        if (selected && byTs.has(selected)) renderEpisode(byTs.get(selected));
+      }
+      async function selectEpisode(ts, e) {
+        selected = ts;
+        store.set("studio.episode", ts);
+        document
+          .querySelectorAll(".item")
+          .forEach((d) =>
+            d.classList.toggle(
+              "sel",
+              d.querySelector(".t")?.textContent === fmtTs(ts),
+            ),
+          );
+        if (!e) return loadEpisodes();
+        renderEpisode(e);
+      }
+      async function renderEpisode(e) {
+        const info = await get(
+          `/umi/episode?ts=${encodeURIComponent(e.ts)}`,
+        ).catch(() => ({ plans: {}, videos: {} }));
+        const sides = Object.keys(info.plans || {});
+        const meta = e.onMac
+          ? await get(`/data/${e.name}-rig/meta.json`).catch(() => null)
+          : null;
+        const side = sides.includes(store.get("studio.epside", "right"))
+          ? store.get("studio.epside", "right")
+          : sides[0];
+        let html = `<div class="card"><h3>${fmtTs(e.ts)}</h3><div class="hint">${e.name}${meta ? ` · ${meta.duration_s}s · ${meta.cameras?.umi?.frames} frames` : ""}${e.onRig && !e.onMac ? " · still on the rig" : ""}</div>`;
+        if (!sides.length) {
+          html += `<div class="empty">No sim yet for this recording.<br /><br />
+            <button class="big" id="ep-process">Make the sim</button>
+            <div class="msg" style="margin-top:8px">for <select id="ep-side"><option value="right">right arm</option><option value="left">left arm</option><option value="both">both arms</option></select></div></div></div>`;
+          $("ep-detail").innerHTML = html;
+          $("ep-side").value = $("side").value;
+          $("ep-process").onclick = async () => {
+            const sd = $("ep-side").value;
+            const r = await post(
+              `/umi/generate?capture=${encodeURIComponent(e.name)}&side=${sd}`,
+            );
+            if (r.error) alertMsg(r.error);
+            else openOverlay(e.name, sd);
+          };
+          return;
+        }
+        html += `<div class="bar" style="margin:6px 0 10px">${sides.length > 1 ? `<label>Arm <select id="ep-armsel">${sides.map((s) => `<option value="${s}">${s}</option>`).join("")}</select></label>` : `<span class="msg">${side} arm</span>`}
+          <button class="small" id="ep-redo" title="Run the conversion again (e.g. after a new calibration)">Re-make sim</button></div>`;
+        const vid = info.videos?.[side];
+        const hasSim = await fetch(`/data/episodes/${encodeURIComponent(e.ts)}/web/scene.json`)
+          .then((r) => r.ok).catch(() => false);
+        if (hasSim) html += `<div id="ep-replay"></div>`;
+        else html += vid
+          ? `<div class="frame" style="aspect-ratio:4/3"><video src="${vid}" controls playsinline></video></div>
+          <div class="hint" style="margin-top:6px">Top: real overhead | sim arm (same camera). Bottom: sim drawn on the real video | side view with the height above the table.</div>`
+          : `<div class="empty">The sim isn't ready for this arm.</div>`;
+        html += `</div><div class="facts">${facts(info.plans[side])}</div>`;
+        if (window.__replay) { window.__replay.destroy(); window.__replay = null; }
+        $("ep-detail").innerHTML = html;
+        if (hasSim) {
+          try {
+            const { mountReplay } = await import("/replay.js");
+            window.__replay = await mountReplay($("ep-replay"), { ep: e.ts, side });
+          } catch (err) {
+            $("ep-replay").innerHTML = `<div class="empty">Couldn't load the sim: ${err.message}</div>`;
+          }
+        }
+        if ($("ep-armsel")) {
+          $("ep-armsel").value = side;
+          $("ep-armsel").onchange = () => {
+            store.set("studio.epside", $("ep-armsel").value);
+            renderEpisode(e);
+          };
+        }
+        $("ep-redo").onclick = async () => {
+          const r = await post(
+            `/umi/generate?capture=${encodeURIComponent(e.name)}&side=${side}`,
+          );
+          if (r.error) alertMsg(r.error);
+          else openOverlay(e.name, side);
+        };
+      }
+      function facts(p) {
+        if (!p) return "";
+        const c = Object.assign(
+          {
+            floor_mm: 10,
+            floor_clamped: 0,
+            clearance_held: 0,
+            min_gap_to_other_arm_mm: 50,
+            speed_cap_deg_s: 60,
+            joint_limit_margin_deg: [99],
+          },
+          p.checks,
+        );
+        const f = [];
+        const err = c.miss_vs_demo_mm || c.ik_pos_err_mm;
+        f.push([
+          err.median <= 10 ? "ok" : err.median <= 20 ? "warn" : "bad",
+          "How closely the arm follows your hand",
+          `${err.median.toFixed(0)} mm`,
+          `typical miss · worst ${err.max.toFixed(0)} mm`,
+        ]);
+        const spans = c.clamped_spans_s || [];
+        f.push([
+          c.hand_lowest_mm >= (c.floor_mm ?? 10) ? "ok" : "bad",
+          "Lowest point of the robot hand",
+          `${c.hand_lowest_mm.toFixed(0)} mm`,
+          `above the table (never below ${c.floor_mm ?? 10} mm)`,
+        ]);
+        const floorFrames = c.floor_clamped || 0;
+        f.push([
+          floorFrames ? "warn" : "ok",
+          "Lifted to stay off the table",
+          floorFrames ? `${(floorFrames / 30).toFixed(1)} s` : "never",
+          floorFrames
+            ? "your demo went lower than the robot is allowed"
+            : "the demo stayed high enough",
+        ]);
+        f.push([
+          c.clearance_held ? "warn" : "ok",
+          "Distance to the other arm",
+          c.min_gap_to_other_arm_mm >= 50
+            ? "≥ 50 mm"
+            : `${c.min_gap_to_other_arm_mm.toFixed(0)} mm`,
+          c.clearance_held
+            ? `held back ${(c.clearance_held / 30).toFixed(1)} s`
+            : "never too close",
+        ]);
+        const ts = p.recommended_time_scale;
+        f.push([
+          ts <= 2 ? "ok" : ts <= 4 ? "warn" : "bad",
+          "Speed on the real arm",
+          ts <= 1.05 ? "full speed" : `${ts.toFixed(1)}× slower`,
+          `to stay under ${c.speed_cap_deg_s}°/s per joint`,
+        ]);
+        const lm = Math.min(...c.joint_limit_margin_deg);
+        f.push([
+          lm >= 5 ? "ok" : "warn",
+          "Joint limits",
+          lm >= 5 ? "OK" : "close",
+          `closest: ${lm.toFixed(0)}° from a limit`,
+        ]);
+        f.push(["", "Length", `${p.seconds.toFixed(1)} s`, "of tracked demo"]);
+        return f
+          .map(
+            ([cls, k, v, d]) =>
+              `<div class="fact ${cls}"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`,
+          )
+          .join("");
+      }
+      function alertMsg(m) {
+        $("ep-detail").insertAdjacentHTML(
+          "afterbegin",
+          `<p class="msg err">${m}</p>`,
+        );
+      }
+
+      // ---------------- run on the real robot (real/replay.py on the rig, filmed, then compared)
+      // The arm moves once the "at the rig" box is ticked and the rig's preflight passes
+      // when the rig asks (after its safety check passed).
+      let runInfo = null,
+        runFilming = false,
+        runJobState = "idle",
+        runCmpSeen = null;
+      async function loadRun() {
+        const mac = await get("/umi/captures").catch(() => []);
+        const eps = (Array.isArray(mac) ? mac : []).filter((c) =>
+          Object.values(c.plans || {}).some(Boolean),
+        );
+        const keep = store.get("studio.runep", selected);
+        $("run-ep").innerHTML = eps
+          .map((c) => `<option value="${c.ts}">${fmtTs(c.ts)}</option>`)
+          .join("");
+        if (eps.some((c) => c.ts === keep)) $("run-ep").value = keep;
+        if (!eps.length)
+          $("run-msg").textContent =
+            "No recording has a plan yet: make the sim in Episodes first.";
+        await renderRun();
+      }
+      async function renderRun() {
+        const ts = $("run-ep").value;
+        if (!ts) {
+          runInfo = null;
+          runButtons();
+          return;
+        }
+        store.set("studio.runep", ts);
+        runInfo = await get(`/umi/episode?ts=${encodeURIComponent(ts)}`).catch(
+          () => null,
+        );
+        if (!runInfo) return;
+        const sides = Object.keys(runInfo.plans || {});
+        const want = $("run-arm").value || store.get("studio.epside", "right");
+        $("run-arm").innerHTML = sides
+          .map((s) => `<option value="${s}">${s}</option>`)
+          .join("");
+        $("run-arm").value = sides.includes(want) ? want : sides[0];
+        const side = $("run-arm").value,
+          p = runInfo.plans[side];
+        const v = runInfo.videos?.[side] || "";
+        if (!$("run-video").src.endsWith(v)) $("run-video").src = v;
+        $("run-facts").innerHTML = facts(p);
+        $("run-info").textContent = p
+          ? `The ${side} arm replays ${p.seconds.toFixed(0)} s of your demo, slowed down to stay under its joint speed limit.`
+          : "";
+        // large IK p95 = the planner's safety net used the nearest safe pose; the rig runs it anyway (warning only)
+        const p95 = p?.checks?.ik_pos_err_mm?.p95;
+        runInfo.refuse = null;
+        runInfo.warn =
+          p95 != null && p95 > RIG_WARN_IK_P95_MM
+            ? `Heads up: in the worst 5% of the demo the arm stays ${p95.toFixed(1)} mm from where your hand was. ` +
+              `Your hand went somewhere the ${side} arm can't safely reach, so the plan uses the nearest safe pose ` +
+              `there. It will still run.`
+            : null;
+        $("run-pre").textContent = runInfo.warn || "";
+        $("run-pre").style.display = runInfo.warn ? "block" : "none";
+        renderCmp();
+        runButtons();
+        pollRun();
+      }
+      const RIG_WARN_IK_P95_MM = 40; // warning only; real/replay.py --max-ik-p95-mm is off by default
+      function renderCmp(pick) {
+        const runs = (runInfo?.real_runs || []).filter(
+          (r) => !r.side || r.side === $("run-arm").value,
+        );
+        if (!runs.length) {
+          $("run-cmp").innerHTML =
+            '<div class="empty">No real runs of this recording yet.</div>';
+          return;
+        }
+        const r = runs.find((x) => x.name === pick) || runs[0];
+        const d = r.stats?.robot_vs_demo_mm || {};
+        $("run-cmp").innerHTML = `
+          <div class="bar" style="margin: 6px 0 10px">
+            <label>Run <select id="run-cmp-sel">${runs.map((x) => `<option value="${x.name}">${x.saved || x.name}</option>`).join("")}</select></label>
+            ${d.median != null ? `<span>Robot vs your demo: usually <b>${Math.round(d.median)} mm</b> apart, at worst ~${Math.round(d.p95)} mm</span>` : ""}
+          </div>
+          ${r.wrist_video
+            ? `<div class="hint" style="margin-bottom: 4px">What the arm sees: your demo's wrist camera | the robot's wrist camera | both overlaid</div>
+          <div class="frame" style="aspect-ratio: auto"><video src="${r.wrist_video}" controls playsinline muted loop></video></div>
+          <div class="hint" style="margin: 10px 0 4px">Overhead: robot run | your demo, paths drawn</div>`
+            : `<div class="hint" style="margin-bottom: 4px">No wrist view for this run (the robot's wrist camera wasn't filmed). Overhead: robot run | your demo</div>`}
+          <div class="frame" style="aspect-ratio: auto"><video src="${r.video}" controls playsinline muted loop></video></div>
+          <img src="${r.plot}" alt="demo vs robot paths" style="width: 100%; margin-top: 10px; border-radius: 8px" />
+          <div class="hint">Saved in ${r.folder}/ (comparison video and plot, your demo, the plan, the robot's log)</div>`;
+        $("run-cmp-sel").value = r.name;
+        $("run-cmp-sel").onchange = () => renderCmp($("run-cmp-sel").value);
+      }
+      let runJobKind = null;
+      function runButtons() {
+        // any job blocks starting a run (the server does one job at a time), but only a robot run locks the
+        // pickers: you can choose the recording/arm while a sim is still being made
+        const busy = runJobState === "running";
+        // only a real run (the arm moving) locks the pickers; a dry run moves nothing
+        const running = busy && runJobKind === "run-live";
+        const ok = !!(runInfo && runInfo.plans?.[$("run-arm").value]);
+        const refuse = runInfo?.refuse;
+        $("run-go").disabled =
+          busy || !ok || !!refuse || !$("run-atrig").checked;
+        $("run-go").title =
+          busy && !running
+            ? "Wait for the sim being made to finish"
+            : !ok
+              ? "Make the sim for this recording first (Episodes)"
+              : refuse
+                ? "The rig would refuse this plan (see the red box)"
+                : !$("run-atrig").checked
+                  ? 'Tick "I\'m at the rig" first'
+                  : "";
+        // dry run: needs a plan and a free server, not the "at the rig" box (nothing moves)
+        $("run-dry").disabled = busy || !ok;
+        $("run-dry").title =
+          busy && !running
+            ? "Wait for the sim being made to finish"
+            : !ok
+              ? "Make the sim for this recording first (Episodes)"
+              : "Uploads the plan and has the rig check every pose against the arm's real joint ranges and clearances. Nothing moves.";
+        $("run-ep").disabled = $("run-arm").disabled = running;
+      }
+      $("run-ep").onchange = () => {
+        $("run-arm").value = "";
+        renderRun();
+      };
+      $("run-arm").onchange = () => {
+        store.set("studio.epside", $("run-arm").value);
+        renderRun();
+      };
+      $("run-atrig").onchange = runButtons;
+      // dry run: same upload + safety preflight on the rig, no --live, so nothing moves and nothing is filmed
+      $("run-dry").onclick = async () => {
+        const ts = $("run-ep").value,
+          side = $("run-arm").value;
+        $("run-dry").disabled = $("run-go").disabled = true;
+        $("run-msg").className = "msg";
+        $("run-msg").textContent =
+          "Dry run: sending the plan to the rig… (the arm won't move)";
+        const r = await post(
+          `/umi/run?episode=${encodeURIComponent(ts)}&side=${side}`,
+        );
+        if (r.error) $("run-msg").textContent = r.error;
+        pollRun();
+      };
+      $("run-go").onclick = async () => {
+        const ts = $("run-ep").value,
+          side = $("run-arm").value;
+        $("run-go").disabled = true;
+        const f = await post(
+          `/robotrun/start?episode=${encodeURIComponent(ts)}&side=${side}`,
+        );
+        runFilming = !f.error;
+        if (f.error)
+          $("run-msg").textContent =
+            `Not filming (${f.error}); running anyway, no comparison will be saved.`;
+        const r = await post(
+          `/umi/run?episode=${encodeURIComponent(ts)}&side=${side}&live=1`,
+        );
+        if (r.error) {
+          $("run-msg").textContent = r.error;
+          if (runFilming) {
+            runFilming = false;
+            await post("/robotrun/stop");
+          }
+        }
+        pollRun();
+      };
+      $("run-stop").onclick = async () => {
+        const r = await post("/umi/stop");
+        $("run-msg").textContent = r.ok
+          ? "STOP sent: the arm folds back to rest."
+          : "STOP FAILED: use the power switch!";
+        $("run-msg").className = "msg err";
+      };
+      const runSend = async (text) => {
+        $("run-confirm").style.display = "none";
+        const r = await post(`/umi/confirm?text=${encodeURIComponent(text)}`);
+        if (r.error) $("run-msg").textContent = r.error;
+      };
+      $("run-confirm-send").onclick = () =>
+        runSend($("run-confirm-text").value);
+      $("run-confirm-cancel").onclick = () => runSend("no");
+      $("run-confirm-text").onkeydown = (e) => {
+        if (e.key === "Enter") runSend(e.target.value);
+      };
+
+      async function pollRun() {
+        const j = await get("/umi/status").catch(() => null);
+        if (!j) return;
+        const was = runJobState;
+        runJobState = j.state;
+        runJobKind = j.kind;
+        // the server keeps only the last job: show it only under the recording + arm it was for
+        const jobFor = j.args ? `${j.args.episode}|${j.args.side}` : null;
+        const selFor = `${$("run-ep").value}|${$("run-arm").value}`;
+        const isRun = j.kind === "run-live" || j.kind === "run-dry";
+        if (!(isRun && jobFor === selFor)) {
+          $("run-confirm").style.display = "none";
+          $("run-log").textContent = "";
+          $("run-dot").className = `dot ${j.state === "running" ? "warn" : ""}`;
+          $("run-msg").className = "msg";
+          $("run-msg").textContent =
+            j.state === "running" && isRun
+              ? `A run of ${fmtTs(j.args.episode)} (${j.args.side} arm) is in progress; switch to it to follow it.`
+              : j.state === "running"
+                ? `A sim is being made${j.args?.capture ? ` for ${fmtTs(j.args.capture.replace("capture-", ""))}` : ""}; running waits until it's done.`
+                : "Start with a dry run: the rig checks every pose and nothing moves.";
+        }
+        if (isRun && jobFor === selFor) {
+          const L = j.log || [],
+            has = (re) => L.some((l) => re.test(l));
+          // the rig's own reason (REFUSED / PREFLIGHT FAILED / SAFETY) beats the generic "replay exited 1"
+          const last = (re) => [...L].reverse().find((l) => re.test(l));
+          const why = (
+            last(/FAILED|refus|SAFETY|not confirmed/i) ||
+            last(/ERROR/) ||
+            j.result?.error ||
+            ""
+          )
+            .replace(/^(ERROR|REFUSED):\s*/, "")
+            // replay.py's IK refusal, in plain words
+            .replace(
+              /the plan's IK misses its targets by ([\d.]+) mm \(p95 > ([\d.]+) mm\).*/,
+              (_, got, lim) =>
+                `in the worst 5% of the demo the arm can't get within ${(+got).toFixed(1)} mm of where your hand was ` +
+                `(the rig allows ${+lim} mm). Pick another recording or arm, or re-make the sim.`,
+            );
+          $("run-log").textContent = L.slice(-80).join("\n");
+          const dry = j.kind === "run-dry";
+          const text = dry
+            ? j.state === "running"
+              ? "Dry run: the rig is checking the plan… (the arm won't move)"
+              : has(/PREFLIGHT FAILED|SAFETY:|refus/i)
+                ? `Dry run failed, the rig refused this plan: ${why}`
+                : j.state === "error"
+                  ? `Dry run failed: ${why}`
+                  : has(/preflight OK/)
+                    ? "Dry run passed: the rig checked every pose, nothing moved. Ready for a real run."
+                    : "Dry run finished, nothing moved."
+            : j.state === "running"
+              ? j.awaiting
+                ? "The rig checked every pose: all OK. Starting the arm."
+                : has(/preflight OK/)
+                  ? "RUNNING ON THE REAL ARM. Press ■ STOP to abort."
+                  : "Sending the plan to the rig and checking it…"
+              : has(/not confirmed/)
+                ? "Cancelled: nothing moved."
+                : has(/PREFLIGHT FAILED|SAFETY:|refus/i) && !has(/preflight OK/)
+                  ? `The rig refused this plan, nothing moved: ${why}`
+                  : j.state === "error"
+                    ? `Failed: ${why}`
+                    : has(/SAFETY STOP|stopping/)
+                      ? `Stopped early: ${why}. The arm folded back to rest.`
+                      : "Finished: the arm is back at rest, motors off.";
+          const label = `${fmtTs(j.args.episode)}, ${j.args.side} arm`;
+          $("run-msg").textContent =
+            `${dry ? "Dry run" : "Real run"} of ${label}: ${text.replace(/^Dry run(: | )/, "")}`;
+          $("run-msg").className = /failed|refused|Stopped|RUNNING/i.test(text)
+            ? "msg err"
+            : "msg";
+          $("run-dot").className =
+            `dot ${j.state === "running" ? "warn" : /Finished|passed/.test(text) ? "ok" : /failed|refused|Stopped/i.test(text) ? "bad" : ""}`;
+          const ask = j.state === "running" && j.awaiting;
+          $("run-confirm").style.display = ask ? "flex" : "none";
+          if (ask && document.activeElement !== $("run-confirm-text")) {
+            $("run-confirm-q").textContent =
+              `Type "${j.awaiting}" to start the ${j.awaiting} arm:`;
+            $("run-confirm-text").value = "";
+            $("run-confirm-text").focus();
+          }
+          if (was === "running" && j.state !== "running" && runFilming) {
+            runFilming = false;
+            await post("/robotrun/stop"); // -> copy overhead, fetch robot log, draw, save the comparison
+          }
+        }
+        let rr = await get("/robotrun/status").catch(() => null);
+        // filming/comparison status is for one recording + arm too; ignore it under any other
+        if (rr && `${rr.episode}|${rr.side}` !== selFor) rr = null;
+        if (rr && rr.state === "processing")
+          $("run-msg").textContent = `Making the comparison: ${rr.step}…`;
+        if (rr && rr.state === "error" && runCmpSeen !== `err${rr.name}`) {
+          runCmpSeen = `err${rr.name}`;
+          if (/no live replay/.test(rr.error)) {
+            // the arm never moved (refused / cancelled): keep the rig's reason on screen, just note no video
+            if (!/refused|Cancelled|failed/i.test($("run-msg").textContent))
+              $("run-msg").textContent =
+                "No comparison saved: the arm didn't move.";
+          } else {
+            $("run-msg").textContent = `Comparison failed: ${rr.error}`;
+            $("run-msg").className = "msg err";
+          }
+        }
+        if (rr && rr.state === "done" && rr.saved && runCmpSeen !== rr.saved) {
+          runCmpSeen = rr.saved;
+          $("run-msg").textContent = `Comparison saved: ${rr.saved}/`;
+          $("run-msg").className = "msg";
+          if (runInfo) renderRun();
+        }
+        runButtons();
+      }
+      setInterval(() => {
+        if (
+          document.getElementById("tab-run").classList.contains("active") ||
+          runJobState === "running" ||
+          runFilming
+        )
+          pollRun();
+      }, 1000);
+
+      // ---------------- start
+      pollStatus();
+      setInterval(pollStatus, 1000);
+      get("/umi/status").then((j) => {
+        // a reload re-attaches to a sim job that is already running (it never starts one), unless it was hidden
+        if (
+          j.state === "running" &&
+          j.kind === "generate" &&
+          store.get("studio.ovHidden", null) !== String(j.id)
+        )
+          openOverlay(j.args.capture, j.args.side, j);
+      });
+      show(
+        { rig: "run" }[store.get("studio.tab", "record")] ||
+          store.get("studio.tab", "record"),
+      );
+    </script>
+  </body>
+</html>
