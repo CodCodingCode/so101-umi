@@ -1,0 +1,30 @@
+{
+  "capture": "2026-11-15T01-36-45-804Z",
+  "tip_in_gripper_mm": [
+    -8.58,
+    -16.42,
+    -105.4
+  ],
+  "tip_sd_mm": [
+    1.27,
+    2.46,
+    1.52
+  ],
+  "pivot_in_table_mm": [
+    127.38,
+    168.13,
+    -18.16
+  ],
+  "residual_rms_mm": 4.96,
+  "frames_used": 107,
+  "frames_multi_face": 206,
+  "rocking_median_deg": 23.3,
+  "rocking_max_deg": 66.9,
+  "cad_tip_mm": [
+    -7.9,
+    -0.22,
+    -98.13
+  ],
+  "good": true,
+  "warnings": []
+}

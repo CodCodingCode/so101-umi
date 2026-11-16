@@ -1,0 +1,14 @@
+{
+ "about": "Each servo's calibrated range on the real rig, in sim joint degrees (rig.json joint_offsets_deg included). Read by the safety guard on 2026-11-11 with the pre-round-6 offsets (rig.before_bb1b28_offsets_20261113_233216.json), then shifted 2026-11-14 by the round-6 joint offsets (robots/so101/calibration/actuators/kinematics_refit.json, tag bb1b28) to match the live rig.json. If rig.json offsets change again, re-read them with a dry check.",
+ "joints": [
+  "shoulder_pan",
+  "shoulder_lift",
+  "elbow_flex",
+  "wrist_flex",
+  "wrist_roll"
+ ],
+ "ranges_deg": {
+  "left": [[-115.9, 124.1], [-96.4, 106.6], [-103.1, 89.9], [-98.9, 103.1], [-253.7, 106.3]],
+  "right": [[-114.8, 125.2], [-105.4, 104.6], [-99.6, 94.4], [-101.0, 105.0], [-268.8, 91.2]]
+ }
+}

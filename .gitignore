@@ -2,17 +2,20 @@
 __pycache__/
 *.pyc
 
+# Your rig's settings (ssh host, paths): copy .env.example
+.env
+
 # Camera captures and snapshots saved by viewer/server.py (large, personal)
 data/
 
-# Setup-specific: tied to one rig (hostnames, C:\robot paths, fitted camera/robot poses)
-sim/
-umi/
-real/
-
-# Calibration outputs are per-rig; keep only the generic checkerboard tools
+# Calibration results fit one rig: keep the tools, checkerboards, README and the reference rig's example/
 calibration/*
+!calibration/README.md
 !calibration/calibrate.py
 !calibration/make_checkerboard.py
 !calibration/checkerboard_9x6_25mm_a4.pdf
 !calibration/checkerboard_9x6_25mm_letter.pdf
+!calibration/example/
+
+# Superseded camera fit kept locally for comparison
+sim/assets/so101_camera_rig.pre_refit_20261113.json
