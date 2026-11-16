@@ -1,0 +1,5 @@
+{
+  "_note": "Finger-tag spots (gripper frame, mm, moving jaw at 0 rad): the flat top face of each finger blade that the wrist camera sees, ~20 mm back from the tip. Used by tag_view.py and finger_tag_view.py.",
+  "fixed": [{ "centre": [-16.4, 7.6, -78.8], "normal": [-0.02, 0.98, -0.09] }],
+  "moving": [{ "centre": [17.8, 7.6, -77.5], "normal": [0.04, 0.93, -0.08] }]
+}

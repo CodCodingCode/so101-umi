@@ -1,0 +1,16 @@
+{
+ "left": {
+  "pedestal_shift_cm": [
+   0.0,
+   0.0,
+   0.0
+  ]
+ },
+ "right": {
+  "pedestal_shift_cm": [
+   0.0,
+   0.0,
+   0.0
+  ]
+ }
+}

@@ -1,0 +1,113 @@
+{
+ "schema_version": 1,
+ "note": "Built by rig_tools/build_rig_from_calibration.py from robots/so101/calibration/cameras/ (training rig): overhead: REFIT lens + pose; left_wrist: measured lens + REFIT pose; right_wrist: measured lens + REFIT pose",
+ "cameras": {
+  "overhead": {
+   "width": 640,
+   "height": 480,
+   "fps": 30,
+   "rotation": 0,
+   "hardware_model": "InnoMaker U20CAM-1080P-S1 (640x480 = centre 4:3 crop of the 1080p sensor)",
+   "intrinsics": {
+    "fx": 544.6,
+    "fy": 544.6,
+    "cx": 282.4,
+    "cy": 242.9
+   },
+   "distortion": [
+    -0.450325,
+    0.276115,
+    -0.00024,
+    -8e-05,
+    -0.10492
+   ],
+   "pose": {
+    "parent_body": "world",
+    "pos": [
+     0.003913,
+     -0.183618,
+     0.525584
+    ],
+    "quat_wxyz": [
+     0.976579,
+     0.2149644,
+     0.009231,
+     0.0001769
+    ]
+   },
+   "calibration_status": "fitted on the reference rig (overhead: REFIT lens + pose)"
+  },
+  "left_wrist": {
+   "width": 640,
+   "height": 480,
+   "fps": 30,
+   "rotation": 0,
+   "hardware_model": "InnoMaker U20CAM-1080P-S1 (640x480 = centre 4:3 crop of the 1080p sensor)",
+   "intrinsics": {
+    "fx": 540.27,
+    "fy": 538.2,
+    "cx": 310.08,
+    "cy": 250.53
+   },
+   "distortion": [
+    -0.4471,
+    0.26909,
+    -0.00079,
+    0.0006,
+    -0.10492
+   ],
+   "pose": {
+    "parent_body": "left_camera_mount",
+    "pos": [
+     0.004535,
+     0.053508,
+     -0.040892
+    ],
+    "quat_wxyz": [
+     0.9678177,
+     -0.2514075,
+     0.0077037,
+     -0.0079882
+    ]
+   },
+   "calibration_status": "fitted on the reference rig (left_wrist: measured lens + REFIT pose)"
+  },
+  "right_wrist": {
+   "width": 640,
+   "height": 480,
+   "fps": 30,
+   "rotation": 0,
+   "hardware_model": "InnoMaker U20CAM-1080P-S1 (640x480 = centre 4:3 crop of the 1080p sensor)",
+   "intrinsics": {
+    "fx": 546.66,
+    "fy": 544.74,
+    "cx": 331.84,
+    "cy": 246.28
+   },
+   "distortion": [
+    -0.45355,
+    0.28314,
+    0.00031,
+    -0.00076,
+    -0.10492
+   ],
+   "pose": {
+    "parent_body": "right_camera_mount",
+    "pos": [
+     0.017747,
+     0.056277,
+     -0.034167
+    ],
+    "quat_wxyz": [
+     0.9612192,
+     -0.2534807,
+     0.0751479,
+     -0.0784721
+    ]
+   },
+   "calibration_status": "fitted on the reference rig (right_wrist: measured lens + REFIT pose)"
+  }
+ },
+ "hide_wrist_mounts": true,
+ "calibration_tag": "cams 6349a0 + kinematics bb1b28"
+}

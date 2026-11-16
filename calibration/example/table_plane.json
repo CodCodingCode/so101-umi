@@ -1,0 +1,66 @@
+{
+  "capture": "2026-11-15T04-38-33-955Z",
+  "good": true,
+  "mode": "height only (touches too clustered for a tilt)",
+  "plane": {
+    "a": 0.0,
+    "b": 0.0,
+    "c_mm": -13.0
+  },
+  "tilt_deg": 0.0,
+  "residual_max_mm": 3.2,
+  "touches": [
+    {
+      "t": [
+        38.29,
+        39.53
+      ],
+      "frames": 38,
+      "xyz_mm": [
+        26.1,
+        144.2,
+        -13.0
+      ],
+      "spread_mm": [
+        2.07,
+        3.9,
+        1.8
+      ]
+    },
+    {
+      "t": [
+        39.6,
+        42.25
+      ],
+      "frames": 43,
+      "xyz_mm": [
+        25.6,
+        140.1,
+        -12.1
+      ],
+      "spread_mm": [
+        2.41,
+        3.83,
+        1.84
+      ]
+    },
+    {
+      "t": [
+        53.17,
+        54.38
+      ],
+      "frames": 37,
+      "xyz_mm": [
+        -61.1,
+        79.0,
+        -16.2
+      ],
+      "spread_mm": [
+        3.4,
+        3.78,
+        2.49
+      ]
+    }
+  ],
+  "note": "z_true = z_measured - c (handheld height bias), mm in tag 13's frame"
+}

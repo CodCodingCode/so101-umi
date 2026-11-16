@@ -1,2 +1,9 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# CAD, renders and tag sheets are binary
+*.stl binary
+*.glb binary
+*.pdf binary
+*.png binary
+*.3mf binary
