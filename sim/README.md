@@ -12,8 +12,8 @@ package.
 
 Not included: the clamp task's teachers, RL environments, trained models and data.
 
-Used by `umi/to_robot.py` and `umi/workspace.py` (via `SqueezeEnv`) and `umi/so101_kin.py` (the arm XML).
-Run the interactive viewer from the repo root with `python -m sim`.
+Used by `umi/to_robot.py` (via `SqueezeEnv`) for IK, the safety checks, trajectory optimization and the
+preview video. Only the parts it needs are included (no scripted demos, task recording or batch envs).
 
 ## Calibration in `assets/` (the reference rig: yours will differ)
 

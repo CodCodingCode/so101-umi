@@ -90,7 +90,6 @@ Which cube face gets which tag, and which way up, is listed in
 - **Overhead camera:** calibrate its lens, then find its pose from table tag ID 13. Measure
   where each robot base sits relative to tag 13, so handheld poses can be expressed in each
   robot's base frame.
-- Use the `viewer/` page in this repo to check each camera's picture and frame rate.
 
 ## 5. Recording demos
 
