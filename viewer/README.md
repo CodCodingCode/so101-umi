@@ -7,12 +7,13 @@ snapshot for both.
 ## Run
 
 ```bash
-python3 viewer/server.py --tunnel dzkchen     # optional: --port 8000
+cp .env.example .env                       # once: set SOUMI_RIG_HOST etc. for your rig PC
+python3 viewer/server.py --tunnel           # optional: --port 8000
 ```
 
 Then open http://localhost:8000 and allow camera access when prompted.
 
-- `--tunnel dzkchen` opens `ssh -L 8104:127.0.0.1:8104 dzkchen` (or reuses it if
+- `--tunnel` opens `ssh -L 8104:127.0.0.1:8104 <SOUMI_RIG_HOST>` (or reuses it if
   port 8104 is already forwarded). Leave it off to run with the UMI camera only.
 - The overhead feed comes from `real\monitor.py` on the rig PC, which holds the
   rig cameras, so **monitor.py must be running there**. The page shows
@@ -51,7 +52,7 @@ server keeps the feed connected all the time, so a recording starts on the next 
 
 ## Recording on the rig PC (`rig/`)
 
-`rig/umi_capture.py` is the half of the viewer that runs **on the rig PC** (on the rig it lives at `C:\robot\umi\umi_capture.py`):
+`rig/umi_capture.py` is the half of the viewer that runs **on the rig PC** (copy it to the rig PC, e.g. `C:\robot\umi\umi_capture.py`; recordings go to `umi_data\` beside that folder unless `SOUMI_RIG_DATA_DIR` is set):
 it opens the wrist (UMI) and overhead cameras there, timestamps every frame on one clock, and writes
 recordings to the rig's disk; only a small preview crosses the network. Stop `monitor.py` first (it holds
 the cameras). It never touches the arms.
@@ -63,7 +64,7 @@ first under "Saved comparisons" in the studio. (The left arm's wrist camera, ind
 camera, so this only works for the right arm.)
 
 ```bash
-python3 viewer/server.py --rig dzkchen     # opens the 8106 tunnel; then use http://localhost:8000/studio.html
+python3 viewer/server.py --rig     # opens the 8106 tunnel; then use http://localhost:8000/studio.html
 ```
 
 Recordings are fetched into `data/<name>-rig/` (`umi/convert.py` reads that layout).
@@ -71,7 +72,7 @@ Recordings are fetched into `data/<name>-rig/` (`umi/convert.py` reads that layo
 ## UMI Studio (`studio.html`): the simple way
 
 ```bash
-python3 viewer/server.py --rig dzkchen     # then open http://localhost:8000/studio.html
+python3 viewer/server.py --rig     # then open http://localhost:8000/studio.html
 ```
 
 Sidebar tabs:
