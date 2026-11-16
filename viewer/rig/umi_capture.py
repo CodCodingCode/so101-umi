@@ -1,12 +1,15 @@
-"""SO-UMI recorder that runs ON the rig PC (dzkchen): wrist (UMI) + overhead cameras on one clock.
+"""SO-UMI recorder that runs ON the rig PC: wrist (UMI) + overhead cameras on one clock.
 
 Both cameras are opened here, every frame gets a timestamp from the same clock the moment it is
 read, and recordings go straight to this machine's disk. Nothing about the data depends on the
 network; only the small live preview crosses it.
 
-    python umi_capture.py [--overhead 1 --umi 3 --robot-wrist 2] [--port 8106] [--out C:\\robot\\umi_data]
+    python umi_capture.py [--overhead 1 --umi 3 --robot-wrist 2] [--port 8106] [--out <dir>]
 
-HTTP (127.0.0.1 only; reach it from the Mac with `ssh -L 8106:127.0.0.1:8106 dzkchen`):
+Defaults can also come from env vars on the rig: SOUMI_CAM_OVERHEAD, SOUMI_CAM_UMI, SOUMI_CAM_ROBOT_WRIST,
+SOUMI_CAPTURE_PORT, SOUMI_RIG_DATA_DIR (default: umi_data next to this script's folder).
+
+HTTP (127.0.0.1 only; reach it from the Mac with `python3 viewer/server.py --rig`, or `ssh -L 8106:127.0.0.1:8106 <rig host>`):
     GET  /cam/<overhead|umi>.mjpg   preview for watching only; ?w=<px>&q=<jpeg quality>&fps=<rate>
                                     (default 320 px, q60, 10 fps: sized for the slow link to the Mac)
     GET  /api/status                cameras (measured fps, last frame age), recording state
@@ -27,6 +30,7 @@ This script never touches the arms.
 
 import argparse
 import json
+import os
 import queue
 import re
 import threading
@@ -398,19 +402,20 @@ def make_handler(rig: Rig, preview_fps, preview_w):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--overhead", type=int, default=1, help="DirectShow index of the overhead camera")
-    ap.add_argument("--umi", type=int, default=3, help="DirectShow index of the UMI (handheld wrist) camera")
-    ap.add_argument("--robot-wrist", type=int, default=2,
-                    help="DirectShow index of the robot arm's wrist camera (rig.json right_wrist = 2), recorded as "
+    env = os.environ.get
+    ap.add_argument("--overhead", type=int, default=int(env("SOUMI_CAM_OVERHEAD", 1)), help="DirectShow index of the overhead camera")
+    ap.add_argument("--umi", type=int, default=int(env("SOUMI_CAM_UMI", 3)), help="DirectShow index of the UMI (handheld wrist) camera")
+    ap.add_argument("--robot-wrist", type=int, default=int(env("SOUMI_CAM_ROBOT_WRIST", 2)),
+                    help="DirectShow index of the robot arm's wrist camera (e.g. rig.json right_wrist), recorded as "
                          "robot_wrist so a robot run can be compared with the demo's wrist view; -1 = don't open it")
     ap.add_argument("--width", type=int, default=640)
     ap.add_argument("--height", type=int, default=480)
     ap.add_argument("--fps", type=int, default=30)
     ap.add_argument("--quality", type=int, default=92, help="JPEG quality of recorded frames")
-    ap.add_argument("--port", type=int, default=8106)
+    ap.add_argument("--port", type=int, default=int(env("SOUMI_CAPTURE_PORT", 8106)))
     ap.add_argument("--preview-fps", type=float, default=10.0)
     ap.add_argument("--preview-width", type=int, default=320)
-    ap.add_argument("--out", default=r"C:\robot\umi_data")
+    ap.add_argument("--out", default=env("SOUMI_RIG_DATA_DIR") or str(Path(__file__).resolve().parents[1] / "umi_data"))
     ap.add_argument("--finger-bank", default=str(Path(__file__).with_name("finger_templates.npz")),
                     help="moving-finger templates (calibration/finger_templates.npz from the Mac) for live gripper tracking")
     a = ap.parse_args()

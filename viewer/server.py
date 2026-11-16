@@ -4,8 +4,10 @@ the rig's overhead camera so the page can show and record it.
 
 Usage:
   python3 viewer/server.py                       # UMI camera only (+ overhead if the tunnel is already up)
-  python3 viewer/server.py --tunnel dzkchen      # also open the SSH tunnel to the rig's monitor.py
+  python3 viewer/server.py --tunnel              # also open the SSH tunnel to the rig's monitor.py
+  python3 viewer/server.py --rig                 # record on the rig PC (viewer/rig/umi_capture.py), use studio.html
 
+The rig PC's ssh host, paths and ports come from .env (see .env.example); --tunnel/--rig HOST overrides the host.
 The overhead feed comes from monitor.py on the rig PC (it holds the rig cameras),
 reached through `ssh -L 8104:127.0.0.1:8104 <host>`. It is relayed at
 /overhead.mjpg for the page to display.
@@ -31,9 +33,13 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import sys
+
 import umi_jobs as UJ   # noqa: E402  (viewer/umi_jobs.py: Generate UMI trajectory / Run real)
 
 VIEWER_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(VIEWER_DIR.parent / "umi"))
+import rig_link as L    # noqa: E402  (rig settings from .env)
 DATA_DIR = VIEWER_DIR.parent / "data"
 ALLOWED_EXT = {".png", ".jpg", ".webm", ".mp4"}
 SAFE_NAME = re.compile(r"^[A-Za-z0-9._-]{1,200}$")
@@ -166,7 +172,7 @@ RECORDER = OverheadRecorder()
 
 
 # ---------------------------------------------------------------- rig recorder (viewer/rig/umi_capture.py on the rig PC)
-RIG = {"host": None, "port": 8106}
+RIG = {"host": None, "port": L.CAPTURE_PORT}
 FETCH = {}   # name -> {"state", "bytes", "total", "error", "dir"}
 
 
@@ -197,13 +203,13 @@ def fetch_live(name):
 
 
 def fetch_recording(name, only=None):
-    """Copy C:\\robot\\umi_data\\<name> from the rig into data/<name>-rig/ (tar over ssh, base64 text,
+    """Copy <SOUMI_RIG_DATA_DIR>\\<name> from the rig into data/<name>-rig/ (tar over ssh, base64 text,
     because the rig's login banner breaks scp)."""
     import base64, tarfile, io
     st = FETCH[name] = {"state": "running", "bytes": 0, "total": None, "error": None, "dir": None}
     remote = (
         "import io,os,sys,tarfile,base64\n"
-        f"d=r'C:\\robot\\umi_data\\{name}'\n"
+        f"d=r'{L.DATA_DIR}\\{name}'\n"
         f"only={only!r}\n"
         "tot=sum(os.path.getsize(os.path.join(r,f)) for r,_,fs in os.walk(d) for f in fs)\n"
         "print('@@TOTAL',tot,flush=True)\n"
@@ -223,7 +229,7 @@ def fetch_recording(name, only=None):
     )
     try:
         p = subprocess.Popen(["ssh", "-o", "BatchMode=yes", RIG["host"],
-                              r"C:\Users\dzkch\.venvs\so101-pi\Scripts\python.exe -u -"],
+                              f"& '{L.PY}' -u -"],
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
         p.stdin.write(remote); p.stdin.close()
         buf = io.BytesIO(); started = False
@@ -303,7 +309,7 @@ def robotrun_process(name, episode, side, t_start, t_stop):
 
 
 class Handler(SimpleHTTPRequestHandler):
-    upstream = "http://127.0.0.1:8104"
+    upstream = f"http://127.0.0.1:{L.MONITOR_PORT}"
 
     def end_headers(self):
         # Never cache the viewer, so edits show up on a normal reload.
@@ -467,7 +473,7 @@ class Handler(SimpleHTTPRequestHandler):
             if sub == "confirm":
                 return self._json(200, UJ.confirm(q.get("text", [""])[0]))
             if sub == "stop":
-                return self._json(200, UJ.stop(RIG["host"] or "dzkchen"))
+                return self._json(200, UJ.stop(RIG["host"]))
         except RuntimeError as e:
             return self._json(409, {"error": str(e)})
         return self._json(404, {"error": "unknown"})
@@ -576,11 +582,16 @@ def open_tunnel(host, port):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8000)
-    ap.add_argument("--tunnel", metavar="SSH_HOST", help="open an SSH tunnel to the rig PC running monitor.py")
-    ap.add_argument("--monitor-port", type=int, default=8104, help="monitor.py port on the rig PC")
-    ap.add_argument("--rig", metavar="SSH_HOST",
-                    help="record on the rig PC with viewer/rig/umi_capture.py (port 8106): opens that tunnel too; use viewer/studio.html")
+    ap.add_argument("--tunnel", metavar="SSH_HOST", nargs="?", const=L.HOST or None,
+                    help="open an SSH tunnel to the rig PC running monitor.py (host defaults to SOUMI_RIG_HOST)")
+    ap.add_argument("--monitor-port", type=int, default=L.MONITOR_PORT, help="monitor.py port on the rig PC")
+    ap.add_argument("--rig", metavar="SSH_HOST", nargs="?", const=L.HOST or None,
+                    help=f"record on the rig PC with viewer/rig/umi_capture.py (port {L.CAPTURE_PORT}): opens that tunnel too; "
+                         "use viewer/studio.html (host defaults to SOUMI_RIG_HOST)")
     args = ap.parse_args()
+    for flag in ("tunnel", "rig"):
+        if f"--{flag}" in sys.argv and not getattr(args, flag):
+            ap.error(f"--{flag} needs a host: pass one or set SOUMI_RIG_HOST in .env")
     if args.tunnel:
         open_tunnel(args.tunnel, args.monitor_port)
     if args.rig:

@@ -5,7 +5,7 @@ generate(capture, side): make sure the rig recording is on the Mac (copy it if n
     browser can play it (plan_<side>.web.mp4).
 run(episode, side, live): upload real/replay.py + the plan and run it on the rig (what real/run.py does). Without
     live it is a preflight only. With live, replay.py asks for the side to be typed; the page relays it (confirm()).
-stop(): touch C:\\robot\\real\\STOP on the rig (the player and every rig runner watch it).
+stop(): touch the STOP file on the rig (<SOUMI_RIG_REAL_DIR>\\STOP) (the player and every rig runner watch it).
 """
 
 from __future__ import annotations
@@ -229,7 +229,7 @@ def run(ts, side, live, extra=()):
         L.upload(plan, rplan)
         args = f"'{rplan}' " + " ".join(extra) + (" --live" if live else "")
         _log("LIVE: the arm starts as soon as the preflight passes" if live else "DRY RUN: preflight only, nothing moves")
-        cmd = ["ssh", "-o", "BatchMode=yes", "-o", "ServerAliveInterval=5", L.HOST,
+        cmd = L.ssh("-o", "BatchMode=yes") + [
                f"& '{L.PY}' -u '{rscript}' {args}; exit $LASTEXITCODE"]
         p = subprocess.Popen(cmd, cwd=REPO, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         with LOCK:
@@ -274,10 +274,13 @@ def confirm(text):
     return {"sent": text.strip(), "expected": want}
 
 
-def stop(host="dzkchen"):
+def stop(host=None):
     """Touch the rig's STOP file (separate ssh, works while a run is streaming)."""
-    r = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", host,
-                        "New-Item -ItemType File -Force -Path 'C:\\robot\\real\\STOP' | Out-Null; Write-Output STOP_OK"],
+    import sys
+    sys.path.insert(0, str(REPO / "umi"))
+    import rig_link as L
+    r = subprocess.run(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", host or L.host(),
+                        f"New-Item -ItemType File -Force -Path '{L.STOP}' | Out-Null; Write-Output STOP_OK"],
                        capture_output=True, text=True, timeout=30)
     ok = "STOP_OK" in r.stdout
     _log("STOP file created on the rig: the arm folds back to rest" if ok else f"STOP FAILED (ssh exit {r.returncode}): "
