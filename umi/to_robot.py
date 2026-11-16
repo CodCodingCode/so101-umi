@@ -1031,7 +1031,10 @@ def main():
     (ep / f"plan_{args.side}{args.tag}.json").write_text(json.dumps(plan, indent=1))
     if args.export_web:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
-        import web_export
+        try:
+            import web_export
+        except ImportError:
+            raise SystemExit("--export-web needs umi/web_export.py (the UMI Studio viewer), which isn't in this repo")
         meta = json.loads((ep / "meta.json").read_text())
         cap_dir = (REPO / meta["overhead_video"]).parent
         web_dir = web_export.export_episode(

@@ -1,16 +1,29 @@
 # SO-UMI converter
 
-Turns a handheld demo recorded with `viewer/` into a joint plan for one SO-101 arm.
+Turns a handheld demo (wrist + overhead camera recording) into a joint plan for one SO-101 arm.
 
 ```
-viewer capture (wrist + overhead mp4)
+recording (wrist + overhead, see Input)
   └─ convert.py    → data/episodes/<ts>/trajectory.csv   gripper-body pose in the table frame (tag 13) + jaw opening, 30 Hz
        └─ to_robot.py → data/episodes/<ts>/plan_<side>.json  joint targets for the arm + safety checks
                         data/episodes/<ts>/plan_<side>.mp4   real overhead next to the sim replay
-workspace.py       → calibration/workspace_<side>.png       where that arm can grasp, drawn on the overhead image
 ```
 
-None of these scripts touches hardware (`real/` does).
+None of these scripts touches hardware. Calibrate first: [`../calibration/README.md`](../calibration/README.md)
+(or copy `calibration/example/` to try the reference rig's values).
+
+## Input
+
+`convert.py <ts>` looks in `data/` for one recording, in either form:
+
+- **Frame folders** (one clock for both cameras, preferred): `data/capture-<ts>-rig/umi/` and
+  `data/capture-<ts>-rig/overhead/`, each with `frames/000001.jpg …` and `frames.csv`
+  (`index,t,…`: frame number and seconds since the recording started, same clock for both cameras).
+- **Videos**: `data/capture-<ts>-umi-*.mp4` (wrist) and `data/capture-<ts>-overhead-*.mp4` (or an
+  `-overhead-*/` frame folder). Container timestamps are used, so start both together.
+
+640×480 at 30 fps, matching the lens calibration. The wrist camera must see the finger tag (ID 1) and the
+overhead camera the cube tags (IDs 20–23) and table tag 13.
 
 ## Run
 
@@ -21,17 +34,13 @@ uv run --with "opencv-python<5" --with numpy --with matplotlib umi/convert.py <c
 # 2. episode -> plan for the left arm (uses the bench-matched clamp twin, sim/squeeze_env.py in this repo)
 uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with pillow \
     --with "opencv-python<5" --with matplotlib umi/to_robot.py <capture-timestamp> --side left
-
-# where can the left arm work? (draw before recording a demo for it)
-cd umi && uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with pillow \
-    --with "opencv-python<5" workspace.py --side left
 ```
 
 ## The full process: handheld demo → real arm
 
 It isn't one big optimization but a chain of steps. Each turns the demo into something the SO-101 can
 really do, and each later step changes the motion only where an earlier result would be unsafe or
-impossible. In Studio (`viewer/studio.html`), **Make the sim** runs steps 1–5 and **Run on robot** runs step 6.
+impossible.
 
 **1. Measure the demo (`convert.py`)**
 
@@ -78,21 +87,16 @@ impossible. In Studio (`viewer/studio.html`), **Make the sim** runs steps 1–5 
 - The plan's checks (below) and the sim video: the planned arm drawn on the real overhead video. When everything
   is right, the sim gripper sits on the handheld gripper the whole time.
 
-**6. On the real arm (`real/replay.py` on the rig)**
+**6. On the real arm (not in this repo)**
 
-- **Preflight:** every pose against the real servo ranges and the clearances to the wrist camera mounts, camera
-  post and other arm. Plans whose IK misses the demo by more than 40 mm (p95) still run, with a warning:
-  those frames use the planner's nearest safe pose (`--max-ik-p95-mm N` restores a hard refusal). Nothing moves until a person ticks "I'm at the rig" and the preflight passes.
-- **Every 40 ms:** `safety.Guard` re-checks limits and clearances, limits how far a command may lead the servo,
-  and stops if a joint can't keep up.
-- **Floor backstop** (`--floor-cm 0.5`): the hand slides along the floor height instead of freezing.
-- **Any stop** (■ STOP, a `STOP` file in `SOUMI_RIG_REAL_DIR`, a safety stop) folds the arm back to rest and turns torque off.
-- The overhead films the run; the demo-vs-robot comparison is saved to `data/episodes/<ts>/real_runs/<run>/`.
+- `plan_<side>.json` holds joint targets for every frame (degrees, gripper 0 = closed … 100 = open) plus the
+  checks below. Stream them to your arm with your own driver (e.g. LeRobot's SO-101 follower), with its own
+  limit and collision checks, slowly the first time.
 
 The only true optimizations are the IK solve in each frame (step 2) and the one-time cube calibration, a bundle
 adjustment over ~600 views (step 1). Everything else limits the demo, and only where the robot couldn't do it
-as recorded. The most common reason a plan is refused is a demo outside the arm's reach: keep the hand where
-`calibration/workspace_<side>.png` shows the arm can grasp.
+as recorded. The most common reason a plan is clamped is a demo outside the arm's reach: keep the hand within
+the arm's reach.
 
 ## How it works
 
@@ -133,21 +137,6 @@ between frames, and peak joint speed with the playback factor (1× for real-time
 - The overhead lag between the two videos isn't measured reliably yet (assumed 0).
 - Gripper units are approximate (CAD lever → jaw angle → sim 0–100 mapping).
 - The overhead stream is 15 fps JPEG at 640×480; cube tags are only ~25–40 px.
-- Running a plan on the real arm: see [`../real/`](../real/) (dry run from the Mac; a person at the rig
-  starts the live run).
-
-## Touch calibration (robot base relative to tag 13)
-
-An alternative to the camera chain for placing each arm's base: `touch_calib.py` reads the arm's
-joints over SSH (read only, torque off, monitor.py stopped) while you put the closed fingertips
-(the rig's confirmed TCP) on each corner of tag 13, and fits the base <-> tag transform.
-
-```bash
-python3 umi/touch_calib.py --side left           # -> calibration/robot_bases.json
-python3 umi/touch_calib.py --side left --check   # touch the tag centre: should read ~0, 0, 0
-```
-
-`to_robot.py` doesn't read `robot_bases.json` yet.
 
 ## Sim and calibration sources (2026-11-15)
 
@@ -265,7 +254,7 @@ Video banners say which case applied: `TILT CHANGED`, `NEAREST SAFE POSE: N mm �
 ### 6. Report
 
 `plan_<side>.json`: the joint path plus every check (misses, torque, floor, clearance, speed, which frames
-were adjusted and why). The video banners and the Studio episode summary read from it.
+were adjusted and why). The video banners read from it.
 
 ### Limits, and the upgrade
 

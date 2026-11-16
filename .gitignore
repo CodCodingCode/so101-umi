@@ -2,11 +2,35 @@
 __pycache__/
 *.pyc
 
-# Your rig's settings (ssh host, paths): copy .env.example
+# Private: rig settings, the recorder/studio, real-arm runner (only for iterating on our own rig)
 .env
+.env.example
+viewer/
+real/
 
-# Camera captures and snapshots saved by viewer/server.py (large, personal)
+# Camera captures and episodes (large, personal)
 data/
+
+# umi/: publish the estimation, calibration and trajectory optimization only
+umi/*
+!umi/README.md
+!umi/convert.py
+!umi/cube_calib.py
+!umi/pivot_calib.py
+!umi/table_touch.py
+!umi/to_robot.py
+!umi/trajopt.py
+
+# sim/: publish only the arm model + scene that umi/to_robot.py plans on
+sim/*
+!sim/README.md
+!sim/__init__.py
+!sim/env.py
+!sim/scene.py
+!sim/cameras.py
+!sim/squeeze_env.py
+!sim/assets/
+sim/assets/so101_camera_rig.pre_refit_20261113.json
 
 # Calibration results fit one rig: keep the tools, checkerboards, README and the reference rig's example/
 calibration/*
@@ -16,6 +40,3 @@ calibration/*
 !calibration/checkerboard_9x6_25mm_a4.pdf
 !calibration/checkerboard_9x6_25mm_letter.pdf
 !calibration/example/
-
-# Superseded camera fit kept locally for comparison
-sim/assets/so101_camera_rig.pre_refit_20261113.json
