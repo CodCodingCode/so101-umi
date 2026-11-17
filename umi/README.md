@@ -32,7 +32,7 @@ overhead camera the cube tags (IDs 20–23) and table tag 13.
 uv run --with "opencv-python<5" --with numpy --with matplotlib umi/convert.py <capture-timestamp>
 
 # 2. episode -> plan for the left arm (uses the bench-matched clamp twin, sim/squeeze_env.py in this repo)
-uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with pillow \
+uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with scipy --with pillow \
     --with "opencv-python<5" --with matplotlib umi/to_robot.py <capture-timestamp> --side left
 ```
 
@@ -292,6 +292,6 @@ p95 27 → **5.0 mm**, max 55 → **9.0 mm**; about the same jerkiness (accel RM
 0 frames below the floor; about 6 s more run time.
 
 ```bash
-uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with pillow \
+uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with scipy --with pillow \
     --with "opencv-python<5" --with matplotlib --with scipy umi/to_robot.py <ts> --side right
 ```

@@ -10,6 +10,7 @@ real/
 
 # Camera captures and episodes (large, personal)
 data/
+/demo.mp4
 
 # umi/: publish the estimation, calibration and trajectory optimization only
 umi/*
