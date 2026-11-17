@@ -27,7 +27,7 @@ dream_kin.py's damped least-squares update.
 This script never talks to hardware.
 
 Usage
-  uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with pillow \
+  uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with scipy --with pillow \
       --with "opencv-python<5" --with matplotlib --with scipy umi/to_robot.py 2026-11-15T00-06-19-417Z --side left
 """
 
