@@ -10,6 +10,19 @@ follower. Also includes a gripper for kinesthetic teaching on an SO-101 leader a
 
 ![SO-UMI handheld](cad/soumi_preview.png)
 
+[![Recording a demo with the SO-UMI handheld, seen from the overhead camera (2x speed)](docs/media/demo.gif)](docs/media/demo.mp4)
+
+_Recording a demo, seen from the overhead camera (2× speed). [Full video](docs/media/demo.mp4)._
+
+## Install
+
+```bash
+git clone https://github.com/CodCodingCode/so101-umi.git && cd so101-umi
+uv venv --python 3.12 && uv pip install -r requirements.txt   # or: pip install -r requirements.txt
+```
+
+Rebuilding the printed parts needs a few more packages: `cad/requirements.txt`.
+
 ## Start here
 
 - **How to set it all up:** [`docs/umi-setup.md`](docs/umi-setup.md). Covers what's different
@@ -25,17 +38,28 @@ follower. Also includes a gripper for kinesthetic teaching on an SO-101 leader a
 
 ## Folders
 
-| Path                      | What's in it                                                                                                                                                                               |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `cad/`                    | Printable STLs for the handheld (handle, two jaw-with-loop parts, camera mount, fit-test coupon), the ArUco tag sheet PDF, renders, a 3D preview (`.glb`) and the CAD check results        |
-| `cad/kinesthetic_leader/` | The 3 parts that turn an SO-101 leader arm into a hand-guided arm with a real gripper and wrist camera, plus an offline 3D viewer                                                          |
-| `cad/src/`                | Python scripts that build the parts, run the checks and make the tag sheet                                                                                                                 |
-| `cad/stock_umi/`          | The original Stanford UMI gripper for reference: its official Cura 3MF print files, the same parts as STLs, its tag PDFs and print settings. Doesn't fit the SO-101 as-is (see its README) |
-| `calibration/`            | Checkerboards (9×6 inner corners, 25 mm squares, A4 and Letter), the lens calibration script, and `example/`: the reference rig's calibration results. Your own results are written here and git-ignored |
+| Path                      | What's in it                                                                                                                                                                                                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cad/`                    | Printable STLs for the handheld (handle, two jaw-with-loop parts, camera mount, fit-test coupon), the ArUco tag sheet PDF, renders, a 3D preview (`.glb`) and the CAD check results                                                                                              |
+| `cad/kinesthetic_leader/` | The 3 parts that turn an SO-101 leader arm into a hand-guided arm with a real gripper and wrist camera, plus an offline 3D viewer                                                                                                                                                |
+| `cad/src/`                | Python scripts that build the parts, run the checks and make the tag sheet                                                                                                                                                                                                       |
+| `cad/stock_umi/`          | The original Stanford UMI gripper for reference: its official Cura 3MF print files, the same parts as STLs, its tag PDFs and print settings. Doesn't fit the SO-101 as-is (see its README)                                                                                       |
+| `calibration/`            | Checkerboards (9×6 inner corners, 25 mm squares, A4 and Letter), the lens calibration script, and `example/`: the reference rig's calibration results. Your own results are written here and git-ignored                                                                         |
 | `umi/`                    | Demo → trajectory (`convert.py`: gripper pose + jaw opening), trajectory → SO-101 joint plan with safety checks and trajectory optimization (`to_robot.py`, `trajopt.py`), and the handheld's calibrations (`cube_calib.py`, `pivot_calib.py`, `table_touch.py`). See its README |
-| `sim/`                    | MuJoCo twin of the two-arm SO-101 bench (Menagerie SO-101 model, calibrated cameras), used by the `umi/` conversions. See its README                                                      |
-| `docs/`                   | The setup guide                                                                                                                                                                            |
-| `data/`                   | Captures and episodes (git-ignored)                                                                                                                                                        |
+| `sim/`                    | MuJoCo twin of the two-arm SO-101 bench (Menagerie SO-101 model, calibrated cameras), used by the `umi/` conversions. See its README                                                                                                                                             |
+| `docs/`                   | The setup guide and the demo video (`media/`)                                                                                                                                                                                                                                    |
+| `data/`                   | Captures and episodes (git-ignored)                                                                                                                                                                                                                                              |
 
 The SO-101 gripper geometry comes from
 [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) (Apache-2.0).
+
+## Contributing
+
+Issues and PRs welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+[Apache-2.0](LICENSE): the code, the SO-UMI and kinesthetic-leader parts, docs and example calibration.
+Third-party files keep their own terms, listed in [NOTICE](NOTICE): the SO-101 model and overhead mount in
+`sim/assets/vendor/` (Apache-2.0, see each `LICENSE`), three.js in the kinesthetic viewer (MIT), and the
+stock UMI parts in `cad/stock_umi/`, which are **not** covered by this repo's license (see its README).

@@ -1,0 +1,10 @@
+# Demo estimation, calibration and trajectory optimization (umi/, calibration/, sim/).
+#   uv venv --python 3.12 && uv pip install -r requirements.txt
+# Rebuilding the CAD needs more: see cad/requirements.txt.
+numpy
+scipy
+opencv-python<5
+matplotlib
+pillow
+mujoco==3.15.0
+gymnasium==1.4.0
