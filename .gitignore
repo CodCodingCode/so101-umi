@@ -12,6 +12,9 @@ real/
 data/
 /demo.mp4
 
+# Write-up in progress (not published yet)
+docs/writeup/
+
 # umi/: publish the estimation, calibration and trajectory optimization only
 umi/*
 !umi/README.md

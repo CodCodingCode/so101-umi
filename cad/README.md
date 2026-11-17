@@ -168,7 +168,7 @@ Notes:
 ## Rebuild
 
 ```bash
-uv venv .venv --python 3.12 && uv pip install --python .venv/bin/python trimesh manifold3d numpy scipy shapely rtree matplotlib fast_simplification
+uv venv .venv --python 3.12 && uv pip install --python .venv/bin/python -r requirements.txt
 cd src && ../.venv/bin/python build.py .. && ../.venv/bin/python render.py ..
 ```
 

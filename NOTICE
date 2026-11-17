@@ -1,0 +1,31 @@
+SO-101 UMI
+Copyright 2026 The SO-101 UMI authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It includes third-party material under its own terms:
+
+- sim/assets/vendor/robotstudio_so101/
+  SO-101 MJCF model and meshes from MuJoCo Menagerie
+  (https://github.com/google-deepmind/mujoco_menagerie), derived from
+  The Robot Studio's SO-ARM100 (https://github.com/TheRobotStudio/SO-ARM100).
+  Apache License 2.0; see that folder's LICENSE. Source revision in UPSTREAM.json.
+
+- sim/assets/vendor/robotstudio_overhead_mount/
+  Overhead camera mount STLs from The Robot Studio's SO-ARM100
+  (https://github.com/TheRobotStudio/SO-ARM100). Apache License 2.0; see that
+  folder's LICENSE. Source commit in UPSTREAM.json.
+
+- cad/ (SO-UMI handheld and kinesthetic-leader parts)
+  The SO-101 gripper, jaw and wrist geometry these parts are built on comes from
+  The Robot Studio's SO-ARM100 (Apache License 2.0).
+
+- cad/kinesthetic_leader/kinesthetic_gripper_viewer.html
+  Embeds three.js r128, Copyright 2010-2021 Three.js Authors, MIT License
+  (notice kept inline in the file).
+
+- cad/stock_umi/
+  Reference copies of the Universal Manipulation Interface (UMI) gripper print files
+  and tags, by the UMI authors (Stanford, Columbia, Toyota Research Institute),
+  https://umi-gripper.github.io. They are NOT covered by this repository's license;
+  see cad/stock_umi/README.md.
