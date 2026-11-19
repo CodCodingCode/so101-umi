@@ -114,7 +114,7 @@ the arm's reach.
     closer to one ID than the other).
   - Templates: 8 crops spread evenly over the opening range. A capture replaces the saved bank only if its
     range is at least as wide; otherwise it uses the saved one. Current bank: capture 02-43-09 (fully
-    closed to wide open, x 348–620 px). The old-spot bank is kept as `finger_templates.old-spot-2026-11-15T00-00.npz`.
+    closed to wide open, x 348–620 px).
   - Template matches must lie on the tag's one-DOF path through the image (±10 px) and score ≥ 0.65
     (true locks ≥ 0.69, wood-grain locks ≤ 0.60); isolated > 40 px jumps are dropped.
   - Wide open, the moving finger leaves the wrist view; those frames are left empty and `to_robot.py`
@@ -210,7 +210,7 @@ should be and how the gripper should be tilted.
 
 ### 2. Joint angles (IK)
 
-Damped least squares (the rig's `dream_kin.py` update) on the bench twin's MuJoCo model (`sim/`):
+Damped least squares on the bench twin's MuJoCo model (`sim/`):
 
 - minimizes **position error** (weight 1) + **tilt error** (weight 0.15): a 5-joint arm can't match position and
   full tilt at once, so tilt is weighted lower;

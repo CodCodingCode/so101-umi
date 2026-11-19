@@ -2,7 +2,7 @@ import trimesh, numpy as np
 from trimesh.transformations import quaternion_matrix
 import os
 from pathlib import Path
-# Official SO-101 meshes (TheRobotStudio/SO-ARM100, Apache-2.0). Default: the sibling robots/sim twin.
+# Official SO-101 meshes (TheRobotStudio/SO-ARM100, Apache-2.0).
 # Override with SO101_OFFICIAL_DIR=/path/to/so101_official (the folder holding so101_new_calib.xml and assets/).
 OFFICIAL = Path(os.environ.get("SO101_OFFICIAL_DIR", Path(__file__).resolve().parents[3] / "sim/so101_twin/assets/so101_official"))
 A = str(OFFICIAL / "assets") + "/"

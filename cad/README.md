@@ -56,8 +56,9 @@ All STLs are in mm. The official meshes come from TheRobotStudio/SO-ARM100 (Apac
 
 ## Jaw reading
 
-- The real STS3215 sits inside, just as on the robot. Read its position over the bus
-  with torque off: these are the same units as the robot's gripper joint.
+- The real STS3215 sits inside as the jaw's hinge, just as on the robot, and stays unpowered.
+- The jaw opening comes from finger tag ID 1 in the wrist camera (`umi/convert.py`): the tag
+  swings on a 54.2 mm lever about the hinge, so its sideways offset gives the jaw angle.
 - No return spring is needed, because your fingers drive the jaw both ways.
 
 ## Checks that passed (in CAD, not on a printer)
@@ -127,11 +128,11 @@ Notes:
 - The finger tags are ~90 mm from the camera and ~42 px across in a 640×480 image.
   That's plenty for detection with exposure locked and the image in focus.
 - The moving jaw's tag stays fully in frame up to about a 50 mm opening. Beyond that
-  it leaves the image (narrow lens, not a fisheye), so use the servo reading as the
-  width source and the tags only as a cross-check.
-- UMI's `get_gripper_width` assumes symmetric fingers (if only one tag is seen it
-  doubles its offset) and a 72 mm tag depth. Neither holds here: use `nominal_z≈0.09`,
-  require both tags, and subtract the fixed closed-jaw offset.
+  it leaves the image (narrow lens, not a fisheye), and `umi/to_robot.py` holds the last
+  (widest) value.
+- UMI's `get_gripper_width` assumes two sliding fingers (if only one tag is seen it
+  doubles its offset). Here only the moving jaw swings, so `umi/convert.py` measures
+  tag ID 1 alone; ID 0 on the fixed jaw isn't measured.
 - Don't reuse IDs 0–19 on the cube; UMI's config reserves them.
 - **Printable sheet:** `soumi_aruco_tags_letter.pdf` (US Letter; also fits A4). Print at
   100% / Actual size and check its 100 mm scale bar with a ruler. Page 1 has the finger
@@ -173,8 +174,7 @@ uv venv .venv --python 3.12 && uv pip install --python .venv/bin/python -r requi
 cd src && ../.venv/bin/python build.py .. && ../.venv/bin/python render.py ..
 ```
 
-`src/asm.py` reads the official SO-101 meshes from `sim/so101_twin/assets/so101_official/`
-next to this repo (`robots/sim/...`). Anywhere else, set `SO101_OFFICIAL_DIR` to a folder holding
+`src/asm.py` needs the official SO-101 meshes: set `SO101_OFFICIAL_DIR` to a folder holding
 `so101_new_calib.xml` and `assets/` from
 [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100).
 

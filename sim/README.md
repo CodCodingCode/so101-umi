@@ -6,9 +6,9 @@ package.
 
 | Path                                     | What                                                                                                                  |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `__init__.py`, `env.py`, `scene.py`, ... | pi_sim (was `pi_sim/`): 232 mm two-arm scene, Menagerie SO-101 model, calibrated cameras, dynamics                    |
+| `__init__.py`, `env.py`, `scene.py`, ... | pi_sim: 232 mm two-arm scene, Menagerie SO-101 model, calibrated cameras, dynamics                                    |
 | `assets/`                                | pi_sim's calibration JSONs, textures and vendored meshes                                                              |
-| `squeeze_env.py`                         | `SqueezeEnv` (was `squeeze/env.py`), the bench-matched clamp twin (real joint ranges, grey box, real-matched colours) |
+| `squeeze_env.py`                         | `SqueezeEnv`, the bench-matched clamp twin (real joint ranges, grey box, real-matched colours)                        |
 
 Not included: the clamp task's teachers, RL environments, trained models and data.
 
