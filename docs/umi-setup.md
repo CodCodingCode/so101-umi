@@ -104,7 +104,7 @@ Which cube face gets which tag, and which way up, is listed in
    those frames.
 5. **Stand behind where the robot base would be** and keep the gripper pointing out from that
    spot, not swinging in from the side. This cuts the frames the arm can't reach, and it keeps your
-   forearm where the robot's arm will be (helps masking, section 7).
+   forearm where the robot's arm will be.
 6. Move at a pace the follower can repeat. Fast moves blur the tags and leave gaps in the pose.
 
 **Do this before printing everything:** hold just a camera and a cube, walk through the task,
@@ -142,32 +142,15 @@ Options, simplest first:
 
 1. **Wrist cameras only** (UMI's choice). The downside: the SO-101 camera is narrow (~61°),
    so the policy sees much less of the scene than UMI's fisheye does.
-2. **Flash ALOHA-style masking, adapted.** [Flash ALOHA](https://johnyao93.github.io/flash-aloha/)
-   blacks out the regions where the operator's hands and arms appear, computed from the
-   gripper pose alone, and applies the same mask during collection and deployment. On their
-   battery-insertion task: **85%** success with masking, 75% without, 65% with AI inpainting.
-   For SO-UMI:
-   - Compute each mask from the **gripper pose only**: from the cube tags during collection,
-     from the joint angles during deployment.
-   - The mask must cover **both** what's in view during collection (handle, cube, your hand,
-     a cone for your forearm) **and** what's in view during deployment (the robot's wrist,
-     forearm and upper arm). Apply that combined mask in both phases.
-   - Leave the jaws visible: they are the same follower parts in both phases, and the policy
-     needs to see what it's grabbing.
-   - Stand behind the robot bases. All the SO-101's bending joints are parallel, so from
-     above each arm is roughly a strip from base to gripper. If your forearm comes in along
-     that strip, one narrow mask covers both you and the robot.
-   - It over-masks. Flash ALOHA says the same about its own masks.
-3. **Replay and re-record.** Replay each demo on the follower and record the overhead
-   camera again. No masking needed, but the scene must be reset exactly and the replay must
+2. **Replay and re-record.** Replay each demo on the follower and record the overhead
+   camera again. The scene must be reset exactly and the replay must
    succeed, so this suits slow tasks.
 
 Also:
 
-- **Two-handed setups:** each wrist camera can see the _other_ hand during collection (and
-  the other robot arm at deployment). Flash ALOHA masks this case too.
+- **Two-handed setups:** each wrist camera can see the _other_ hand during collection and
+  the other robot arm at deployment, so those images won't match.
 - Keep your head and body out of the overhead view, or crop the image to the workspace.
-  Masks only cover hands and arms.
 
 ## 8. Grip force
 
@@ -198,14 +181,13 @@ bottle half flip (small bottle about a third full), button pressing on a phone o
 console, USB-C or battery insertion. **Avoid:** heavy objects, tasks that depend on
 squeezing hard, and tasks that need full 6-DoF wrist orientation.
 
-Film a teleop attempt next to it and time both. Plan on about 50 demos per task (Flash
-ALOHA's number), and smooth the policy's output between action chunks.
+Film a teleop attempt next to it and time both, and smooth the policy's output between
+action chunks.
 
 ## Sources
 
 - UMI: [project page](https://umi-gripper.github.io/), [code](https://github.com/real-stanford/universal_manipulation_interface)
   (tag conventions from `example/calibration/aruco_config.yaml`, `scripts/calibrate_gripper_range.py`,
   `umi/common/cv_util.py`)
-- Flash ALOHA: [project page and paper](https://johnyao93.github.io/flash-aloha/)
 - SO-101 meshes: [TheRobotStudio/SO-ARM100](https://github.com/TheRobotStudio/SO-ARM100) (Apache-2.0)
 - LeRobot SO-101 docs: [huggingface.co/docs/lerobot/so101](https://huggingface.co/docs/lerobot/so101)

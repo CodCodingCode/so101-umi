@@ -27,7 +27,7 @@ Rebuilding the printed parts needs a few more packages: `cad/requirements.txt`.
 
 - **How to set it all up:** [`docs/umi-setup.md`](docs/umi-setup.md). Covers what's different
   from real UMI, tags, cameras, recording, turning demos into robot data, the overhead-camera
-  problem and masking, grip force, and the arm's limits.
+  problem, grip force, and the arm's limits.
 - **What to print:** [`cad/README.md`](cad/README.md). The overhead camera sits on The Robot Studio's
   [overhead camera mount](https://github.com/TheRobotStudio/SO-ARM100/tree/main/Optional/Overhead_Cam_Mount_Webcam)
   (STLs also in `sim/assets/vendor/robotstudio_overhead_mount/`).
