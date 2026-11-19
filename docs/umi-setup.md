@@ -178,6 +178,9 @@ contact and never squeezes. Fixes:
 - **Soft fin-ray fingertips** on both handheld and robot (what UMI uses). Squeezing then
   shows up as extra closing and in the image.
 - **Relabel the data:** when the jaw stops short of closed, set the target a few mm tighter.
+- **Squeeze reflex** ([`grip/`](../grip/README.md)): at replay time, once the jaw stops on something, command it a
+  few units past where it really is, so the servo keeps pushing at its torque limit. 33% → 100% of grasps held in
+  sim; not yet tested on the real arm.
 - **Force sensors:** most accurate, most expensive and fiddly.
 
 ## 9. What the arm can handle (_estimates_)
