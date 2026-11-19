@@ -19,10 +19,10 @@ Chain of frames
 Sim: the bench-matched clamp twin (sim/squeeze_env.py SqueezeEnv): 232 mm layout, real joint
 ranges, the grey box (parked out of view), real-matched colours.
 
-IK is solved for the gripper BODY (the frame the handheld replicates), steering the rig's
-person-confirmed tool point (tcp_confirmed.json) plus the gripper orientation at a lower weight
-(the SO-101 has 5 joints, so a full 6-D pose can only be matched as near as it can be), with
-dream_kin.py's damped least-squares update.
+IK is solved for the gripper BODY (the frame the handheld replicates), steering the measured
+tool point (TCP_IN_GRIPPER) plus the gripper orientation at a lower weight (the SO-101 has 5
+joints, so a full 6-D pose can only be matched as near as it can be), with a damped
+least-squares update.
 
 This script never talks to hardware.
 
@@ -45,7 +45,7 @@ REPO = Path(__file__).resolve().parents[1]
 DATA = REPO / "data"
 
 SIM_HOME6 = np.array([0.0, -45.8, 45.9, 90.0, -2.8, 100.0])  # so101_real.SIM_HOME (per arm)
-TCP_IN_GRIPPER = np.array([-0.0066, -0.0002, -0.0996])         # rig's measured tool point (tcp_confirmed.json, 2026-11-14)
+TCP_IN_GRIPPER = np.array([-0.0066, -0.0002, -0.0996])         # the reference rig's measured tool point (2026-11-14)
 HAND_BODIES = ("gripper", "moving_jaw_so101_v1", "camera_mount", "wrist")
 JAW_HINGE_TO_TAG_MM = 54.2   # moving-jaw hinge -> finger-tag spot, in the hinge plane (cad/src/asm.py + finger_tag_patches.json)
 JAW_CLOSED_RAD = -0.17       # CAD: jaws touching (cad/src/build.py)
@@ -285,7 +285,7 @@ class ArmModel:
         return self.d.xpos[self.body].copy(), self.d.xmat[self.body].reshape(3, 3).copy()
 
     def ik(self, p_tcp_world, R_world, q0_deg, iters=60, rot_w=0.15, max_step_deg=None):
-        """Damped least squares (dream_kin.py's update) for the gripper body: the TCP point to
+        """Damped least squares for the gripper body: the TCP point to
         p_tcp_world, the body orientation toward R_world at weight rot_w.
         max_step_deg: no joint may end more than this far from q0_deg. Frame to frame this keeps the
         solution on the same arm configuration (it misses the target a little instead of flipping
