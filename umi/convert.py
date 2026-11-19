@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""SO-UMI converter: viewer capture pair -> handheld gripper trajectory.
+"""SO-UMI converter: capture pair -> handheld gripper trajectory.
 
-Input: a capture recorded by viewer/ (two files sharing a timestamp):
+Input: a capture (two videos sharing a timestamp; recording them is up to you, see docs/umi-setup.md):
     data/capture-<ts>-umi-640x480.mp4        wrist camera on the handheld
-    data/capture-<ts>-overhead-640x480.mp4   rig overhead camera (via monitor.py)
+    data/capture-<ts>-overhead-640x480.mp4   overhead camera
 
 Output: data/episodes/<ts>/
     gripper_pose.csv   per overhead frame: pose of the handheld's gripper body in the TABLE frame
@@ -283,7 +283,7 @@ def solve_translation(R, obj_mm, img_norm):
 
 
 def live_detections(cam_dir: Path):
-    """Detections made live on the rig while recording (viewer/rig/umi_capture.py: <cam>/detections.jsonl).
+    """Detections made live while recording (<cam>/detections.jsonl: one JSON record per frame with t and tags).
     Used when the frames themselves were not copied. Yields (t, {tag id: 4x2 corners px}, raw record)."""
     with open(cam_dir / "detections.jsonl") as f:
         for line in f:
@@ -686,7 +686,7 @@ def main():
     for pre in ("capture-",):
         ts = ts.removeprefix(pre)
     ts = ts.split("-umi-")[0].split("-overhead-")[0].removesuffix("-rig")
-    rig_dir = DATA / f"capture-{ts}-rig"          # recorded on the rig PC (viewer/rig/umi_capture.py): one clock, 30 fps
+    rig_dir = DATA / f"capture-{ts}-rig"          # frame-folder capture: <cam>/frames.csv for both cameras on one clock, 30 fps
     if (rig_dir / "umi" / "frames.csv").exists() and (rig_dir / "overhead" / "frames.csv").exists():
         umi_vid, oh_vid = rig_dir / "umi", rig_dir / "overhead"
     else:

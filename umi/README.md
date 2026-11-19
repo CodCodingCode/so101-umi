@@ -129,8 +129,8 @@ the arm's reach.
 IK position/orientation error, frames clamped at the midline (each arm keeps 30 mm on its own
 side) and at the floor (hand ≥ 5 mm above the table), joint-limit margin, the largest joint step
 between frames, and peak joint speed with the playback factor (1× for real-time plans, capped at
-150°/s and 800°/s²). Collision (arm–arm, mount post, box) and tracking checks are left to the rig's
-`safety.Guard`.
+150°/s and 800°/s²). Collision (mount post, box) and tracking checks are left to the safety checks of
+whatever runs the plan on the arm.
 
 ## Known limits
 
@@ -271,7 +271,7 @@ The principled upgrade is a **trajectory optimization**: solve all frames togeth
 
 ### `--optimize` (default): whole-demo trajectory optimization (`umi/trajopt.py`)
 
-On by default (the viewer's "Make the sim" job included); `--no-optimize` gives the frame-by-frame plan alone. The optimizer's cost has no other-arm term, so the re-check below also enforces the other-arm clearance.
+On by default; `--no-optimize` gives the frame-by-frame plan alone. The optimizer's cost has no other-arm term, so the re-check below also enforces the other-arm clearance.
 
 Unknowns: every frame's 5 joint angles at once. One least-squares cost (scipy `least_squares`, banded sparse
 Jacobian), started from the frame-by-frame plan:

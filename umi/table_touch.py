@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Table-plane calibration from a "table touch" recording.
 
-Record (UMI Studio -> Record, ~30 s): jaws closed, handle held like in a demo (jaws down, back face 23
+Record a capture (~30 s): jaws closed, handle held like in a demo (jaws down, back face 23
 toward the overhead camera). Touch the table with the closed fingertips at ~5 spots spread over the work
 area (left / right of tag 13, far left, far forward-right near the box, where you grasp the cube), holding
 each one still for ~3 s, lifting in between.

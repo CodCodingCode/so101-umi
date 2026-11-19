@@ -160,9 +160,9 @@ class RobotEnv(gym.Env):
     def _hide_wrist_mounts(self, camera_rig):
         """A real wrist camera cannot see its own mount; with the refit wrist poses (calibration tag 6349a0) the right
         wrist camera sits inside its modelled housing and renders black. When the rig file says
-        "hide_wrist_mounts": true (rig_tools/build_rig_from_calibration.py sets it) or PI_SIM_HIDE_CAM_MOUNTS=1, the
+        "hide_wrist_mounts": true or PI_SIM_HIDE_CAM_MOUNTS=1, the
         visible geoms of both wrist camera mounts move to geom group 5, which MuJoCo does not draw by default, and the
-        overhead render turns group 5 back on, so the overhead still sees the mounts (same as warprm's pi_sim).
+        overhead render turns group 5 back on, so the overhead still sees the mounts.
         Returns the overhead scene option, or None when nothing is hidden (renders unchanged)."""
         import json
         import os

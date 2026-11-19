@@ -1,6 +1,6 @@
 {
  "schema_version": 1,
- "note": "Built by rig_tools/build_rig_from_calibration.py from robots/so101/calibration/cameras/ (training rig): overhead: REFIT lens + pose; left_wrist: measured lens + REFIT pose; right_wrist: measured lens + REFIT pose",
+ "note": "Fitted on the reference rig: overhead: REFIT lens + pose; left_wrist: measured lens + REFIT pose; right_wrist: measured lens + REFIT pose",
  "cameras": {
   "overhead": {
    "width": 640,
