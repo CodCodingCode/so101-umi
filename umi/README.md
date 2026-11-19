@@ -289,7 +289,7 @@ toward the safe frame-by-frame pose. Smoothing is skipped (it is part of the cos
 
 Episode `02-43-09` (356 frames, right arm), miss vs your hand on tracked frames: median 4.4 → **0.5 mm**,
 p95 27 → **5.0 mm**, max 55 → **9.0 mm**; about the same jerkiness (accel RMS 0.138 vs 0.149 °/frame²);
-0 frames below the floor; about 6 s more run time.
+0 frames below the floor. The optimizer itself takes about 1 s on recent episodes.
 
 ```bash
 uv run --python 3.12 --with mujoco==3.15.0 --with gymnasium==1.4.0 --with numpy --with scipy --with pillow \

@@ -1,4 +1,4 @@
-# SO-UMI handheld gripper (v0.4 "pinch", not yet test-printed)
+# SO-UMI handheld gripper (v0.4 "pinch")
 
 A handheld copy of the SO-101 gripper for UMI-style data collection. It reuses the
 robot's own gripper parts, so the camera-to-jaw geometry is the same on the
@@ -153,9 +153,9 @@ Notes:
   straight up (the part stands on end), because then every layer is a complete ring. If
   that orientation prints badly, print the part the usual way and add 1–2 extra walls.
 
-## Known risks / things to tune
+## Things to tune
 
-- **Ergonomics are untested.** In `src/build.py`:
+- **Fit to your hand** in `src/build.py`:
   - `LOOP_Y` and `LOOP_Z` set the loop height and how far forward the loops sit.
   - `RI_X` and `RI_Y` set the hole size.
   - `GRIP_TOP`, `RAKE` and `GRIP_LEN` set the grip position, angle and length.
@@ -163,8 +163,8 @@ Notes:
   If your thumb can't get through comfortably, move `GRIP_TOP` forward (more negative z)
   or move the loops back (`LOOP_Z`). Re-run the checks: the closed moving loop is 3.7 mm
   from the grip front.
-- **Not printed yet:** the horn hole pattern comes from the CAD mesh. Print the fit
-  coupon first.
+- **Check your servo's horn first:** the horn hole pattern comes from the CAD mesh. If you
+  change the horn plate, print the fit coupon before the full handle.
 
 ## Rebuild
 

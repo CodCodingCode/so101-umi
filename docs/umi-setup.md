@@ -4,8 +4,8 @@ How to collect UMI-style demonstrations with a handheld copy of the SO-101 gripp
 train a policy that runs on an SO-101 follower arm. Also covers the overhead-camera
 problem and grip force.
 
-> **Status:** designed and checked in CAD only. Nothing has been printed or tested on
-> hardware yet. Numbers marked _estimate_ are calculations, not measurements.
+> **Status:** printed and in use. Demos are recorded with the handheld, converted to joint plans
+> and replayed on a real SO-101. Numbers marked _estimate_ are calculations, not measurements.
 
 ## 1. What UMI is, and what SO-UMI changes
 
@@ -100,9 +100,10 @@ Which cube face gets which tag, and which way up, is listed in
 3. Gripper pose = cube pose × the fixed cube-to-gripper transform from the CAD (the cube's
    position in the gripper frame is in `cad/src/build.py`).
 4. **Stay inside the arm's reach**: about 40 cm from where the robot base would be.
-   Anything outside is thrown away at the IK step.
+   Outside it, the planner holds the arm at the nearest pose it can safely reach and flags
+   those frames.
 5. **Stand behind where the robot base would be** and keep the gripper pointing out from that
-   spot, not swinging in from the side. This cuts the demos IK rejects, and it keeps your
+   spot, not swinging in from the side. This cuts the frames the arm can't reach, and it keeps your
    forearm where the robot's arm will be (helps masking, section 7).
 6. Move at a pace the follower can repeat. Fast moves blur the tags and leave gaps in the pose.
 
@@ -115,7 +116,8 @@ you've found the real problem early.
 1. Convert each frame's gripper pose into the robot's base frame.
 2. Run SO-101 inverse kinematics per frame. The SO-101 has **5 joints** (pan, shoulder,
    elbow, wrist pitch, wrist roll), so the gripper can only point within the vertical plane
-   through the arm's base. Drop or flag frames the arm can't reach.
+   through the arm's base. Frames the arm can't reach are held at the nearest safe pose and
+   flagged (`umi/to_robot.py`; every step is in [`umi/README.md`](../umi/README.md)).
 3. Use the handheld servo reading directly as the gripper action. It is in the same units
    as the robot's gripper joint, as long as both are calibrated the same way.
 4. Write a normal LeRobot dataset in joint space: wrist images, joint-angle states and
@@ -163,8 +165,7 @@ Options, simplest first:
 Also:
 
 - **Two-handed setups:** each wrist camera can see the _other_ hand during collection (and
-  the other robot arm at deployment). Flash ALOHA masks this case too. It hasn't been
-  checked in CAD yet.
+  the other robot arm at deployment). Flash ALOHA masks this case too.
 - Keep your head and body out of the overhead view, or crop the image to the workspace.
   Masks only cover hands and arms.
 
@@ -196,15 +197,6 @@ squeezing hard, and tasks that need full 6-DoF wrist orientation.
 
 Film a teleop attempt next to it and time both. Plan on about 50 demos per task (Flash
 ALOHA's number), and smooth the policy's output between action chunks.
-
-## 10. Not done yet
-
-- [ ] Print the fit-test coupon and confirm the horn screw pattern
-- [ ] Print the handheld and check the ergonomics (tuning variables are listed in `cad/README.md`)
-- [ ] IK dry run with a camera and cube only
-- [ ] Recorder script: wrist + overhead frames, cube pose, servo position, one clock
-- [ ] Retargeting script: gripper pose → SO-101 IK → LeRobot dataset
-- [ ] Overhead mask script (section 7), plus the cross-camera case for two hands
 
 ## Sources
 
