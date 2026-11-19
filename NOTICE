@@ -16,16 +16,6 @@ It includes third-party material under its own terms:
   (https://github.com/TheRobotStudio/SO-ARM100). Apache License 2.0; see that
   folder's LICENSE. Source commit in UPSTREAM.json.
 
-- cad/ (SO-UMI handheld and kinesthetic-leader parts)
+- cad/ (SO-UMI handheld parts)
   The SO-101 gripper, jaw and wrist geometry these parts are built on comes from
   The Robot Studio's SO-ARM100 (Apache License 2.0).
-
-- cad/kinesthetic_leader/kinesthetic_gripper_viewer.html
-  Embeds three.js r128, Copyright 2010-2021 Three.js Authors, MIT License
-  (notice kept inline in the file).
-
-- cad/stock_umi/
-  Reference copies of the Universal Manipulation Interface (UMI) gripper print files
-  and tags, by the UMI authors (Stanford, Columbia, Toyota Research Institute),
-  https://umi-gripper.github.io. They are NOT covered by this repository's license;
-  see cad/stock_umi/README.md.

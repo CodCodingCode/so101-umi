@@ -2,7 +2,7 @@
 
 How to collect UMI-style demonstrations with a handheld copy of the SO-101 gripper and
 train a policy that runs on an SO-101 follower arm. Also covers the overhead-camera
-problem, grip force, and kinesthetic teaching as an alternative.
+problem and grip force.
 
 > **Status:** designed and checked in CAD only. Nothing has been printed or tested on
 > hardware yet. Numbers marked _estimate_ are calculations, not measurements.
@@ -172,65 +172,14 @@ Also:
 
 The stock jaws are rigid, and the handheld only records the jaw angle. Touching an object
 and squeezing it give the same reading, so a policy trained on this data closes until
-contact and never squeezes. This applies to kinesthetic teaching too. Fixes:
+contact and never squeezes. Fixes:
 
 - **Soft fin-ray fingertips** on both handheld and robot (what UMI uses). Squeezing then
   shows up as extra closing and in the image.
 - **Relabel the data:** when the jaw stops short of closed, set the target a few mm tighter.
 - **Force sensors:** most accurate, most expensive and fiddly.
 
-## 9. Alternative: kinesthetic teaching
-
-Kinesthetic teaching means moving the robot arm itself by hand while it records its own
-joint angles, then replaying them (what Flash ALOHA does). Compared with the handheld:
-
-- Every demo is reachable by construction: no IK, no 5-DoF problem.
-- The overhead camera sees the real robot arms, so masking only has to hide your hands.
-- You move at human speed, which teleop can't match. Flash ALOHA did battery insertion at
-  85% in 5.7 s versus 55% in 17.9 s by teleop, and toss-and-catch, which teleop couldn't do.
-
-**Use a leader arm.** Its lower gear ratios make it easy to move by hand. The gear ratio is
-physical; it can't be changed in code. In software you only control torque on/off, torque
-limit, PID gains and acceleration. Servos per the LeRobot SO-101 docs (check the labels):
-
-| Joint         | Follower     | Leader       |
-| ------------- | ------------ | ------------ |
-| Shoulder pan  | 1/345 (C001) | 1/191 (C044) |
-| Shoulder lift | 1/345 (C001) | 1/345 (C001) |
-| Elbow         | 1/345 (C001) | 1/191 (C044) |
-| Wrist flex    | 1/345 (C001) | 1/147 (C046) |
-| Wrist roll    | 1/345 (C001) | 1/147 (C046) |
-| Gripper       | 1/345 (C001) | 1/147 (C046) |
-
-LeRobot runs leader arms under the `so101_follower` driver unchanged.
-
-**The kinesthetic gripper:** [`../cad/kinesthetic_leader/`](../cad/kinesthetic_leader/) has three
-parts that replace the leader's handle and trigger with a real gripper, finger loops and
-the wrist camera. Assembly, the arm-collision check and the grip-force caveat are in its
-README.
-
-**If both arms are followers:**
-
-- With torque off you _can_ move a follower by hand (LeRobot's calibration has you do it),
-  but it's stiff and fights fast moves: the motor spins 345× faster than the joint, so its
-  rotor inertia is multiplied by 345² ≈ 119,000 at the joint. Fine for slow demos, not for
-  throws or catches.
-- Worst at the wrist and gripper, where your hand has no leverage.
-- Upside: the same arm records and replays. Record with torque off, replay with torque on,
-  and re-record the cameras for clean overhead images.
-- Fixes, cheapest first:
-  1. **Software assist (untested idea):** the STS3215 has a PWM mode (`OperatingMode.PWM` in
-     LeRobot's Feetech driver). Keep the motors on and add gravity compensation (from the
-     arm model) plus friction compensation in the direction of motion. Makes slow and
-     medium moves lighter. It can't cancel the rotor inertia, so fast flicks stay heavy. PWM
-     sets voltage, not torque, so it's cruder than Flash ALOHA's torque control. Needs effort
-     caps, joint limits and a kill switch.
-  2. **Swap the wrist flex, wrist roll and gripper servos to 1/147** (3 per arm). Those are
-     the joints that fight you most. The wrist keeps ~43% of its torque, fine for light
-     objects. Swap whole servos; STS3215 gear sets by ratio don't seem to be sold.
-  3. **Use the SO-UMI handheld** instead, so nothing gets backdriven.
-
-## 10. What the arm can handle (_estimates_)
+## 9. What the arm can handle (_estimates_)
 
 - **Reach:** about 40 cm from the base.
 - **Speed:** each joint tops out around 4–5 rad/s with no load.
@@ -248,7 +197,7 @@ squeezing hard, and tasks that need full 6-DoF wrist orientation.
 Film a teleop attempt next to it and time both. Plan on about 50 demos per task (Flash
 ALOHA's number), and smooth the policy's output between action chunks.
 
-## 11. Not done yet
+## 10. Not done yet
 
 - [ ] Print the fit-test coupon and confirm the horn screw pattern
 - [ ] Print the handheld and check the ergonomics (tuning variables are listed in `cad/README.md`)
@@ -256,7 +205,6 @@ ALOHA's number), and smooth the policy's output between action chunks.
 - [ ] Recorder script: wrist + overhead frames, cube pose, servo position, one clock
 - [ ] Retargeting script: gripper pose → SO-101 IK → LeRobot dataset
 - [ ] Overhead mask script (section 7), plus the cross-camera case for two hands
-- [ ] Fit the kinesthetic gripper on a real leader arm
 
 ## Sources
 

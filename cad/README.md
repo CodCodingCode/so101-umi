@@ -38,8 +38,9 @@ the robot keeps its stock parts.
 | `soumi_assembly_preview.glb`             | no                                      | Colored 3D assembly; opens in Quick Look                                                                              |
 | `soumi_preview.png`, `check_report.json` | no                                      | Renders and the clearance checks                                                                                      |
 
-[`stock_umi/`](stock_umi/) holds the original Stanford UMI gripper parts for reference. They don't
-fit the SO-101 as-is; see its README.
+The original Stanford UMI gripper (which doesn't fit the SO-101 as-is) is on the
+[UMI project page](https://umi-gripper.github.io/) and in the official
+[UMI hardware guide](https://docs.google.com/document/d/1TPYwV9sNVPAi0ZlAupDMkXZ4CA1hsZx7YDMSmcEy6EU/edit?usp=sharing).
 
 All STLs are in mm. The official meshes come from TheRobotStudio/SO-ARM100 (Apache-2.0).
 
@@ -179,7 +180,7 @@ next to this repo (`robots/sim/...`). Anywhere else, set `SO101_OFFICIAL_DIR` to
 
 Other scripts in `src/`:
 
-- `arm_sweep.py`: the arm-collision sweep described in `kinesthetic_leader/README.md` (also needs `mujoco`).
+- `arm_sweep.py`: checks whether the finger loops would hit the SO-101 arm anywhere in its joint ranges (also needs `mujoco`).
 - `tag_sheet.py OUT.pdf`: regenerates the tag sheet (also needs `opencv-contrib-python`).
 - `tag_view.py OUT_DIR TAG_MM`: writes `OUT_DIR/wrist_view_tags.png`, the wrist camera's view of the finger
   tags (saved here as `tag_placement_wrist_view.png`; also needs `opencv-contrib-python`).
