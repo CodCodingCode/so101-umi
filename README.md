@@ -1,5 +1,7 @@
 # SO-101 UMI
 
+Built on [UMI](https://umi-gripper.github.io/) (Universal Manipulation Interface; Chi et al., RSS 2024).
+
 UMI-style data collection for the SO-101 arm. A handheld copy of the SO-101's own
 gripper records demonstrations, and the policy trained on them runs on an SO-101
 follower.
