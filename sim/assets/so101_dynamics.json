@@ -1,5 +1,5 @@
 {
- "source": "2026-11-10 rig sysid (rig_tools/dyn_test.py + fit_dynamics_tc.py): 50 Hz scripted steps, sines, gravity holds and gripper moves on both real arms; fitted on the left arm, right arm held out.",
+ "source": "2026-11-10 system identification on the reference rig: 50 Hz scripted steps, sines, gravity holds and gripper moves on both real arms; fitted on the left arm, right arm held out.",
  "rms_deg_stock": {
   "left": 1.7914132340138607
  },

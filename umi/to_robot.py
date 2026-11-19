@@ -6,7 +6,7 @@ in the table frame, tag 13) and produces, for the chosen arm:
 
     data/episodes/<ts>/plan_<side>.json     joint targets (pi_sim / so101_real units: degrees for the
                                             5 arm joints, 0-100 for the gripper) on a fixed clock,
-                                            plus every check result. This is what the rig runner plays.
+                                            plus every check result. This is what you replay on the arm.
     data/episodes/<ts>/plan_<side>.mp4      sim replay from the rig's calibrated overhead camera,
                                             next to the real overhead video, for a visual check
     data/episodes/<ts>/plan_<side>.png      tracking error, joint speeds, clearance plots
@@ -17,7 +17,7 @@ Chain of frames
   pi_sim world --(IK on the rig's MuJoCo model)--> joints
 
 Sim: the bench-matched clamp twin (sim/squeeze_env.py SqueezeEnv): 232 mm layout, real joint
-ranges, the grey box (parked out of view), real-matched colours. Same model the rig's safety guard uses.
+ranges, the grey box (parked out of view), real-matched colours.
 
 IK is solved for the gripper BODY (the frame the handheld replicates), steering the rig's
 person-confirmed tool point (tcp_confirmed.json) plus the gripper orientation at a lower weight
@@ -111,7 +111,6 @@ class ArmModel:
     def __init__(self, side: str):
         # The bench-matched clamp twin (sim/squeeze_env.py SqueezeEnv): the rig's 232 mm layout, real
         # joint ranges (so101_real_ranges.json), the grey box, off-table geometry and real-matched colours.
-        # Built the way the rig's real_clamp.py builds its safety model.
         sys.path.insert(0, str(REPO))   # sim/ is this repo's own copy of the bench twin (see sim/README.md)
         import mujoco
         from sim import squeeze_env
@@ -485,8 +484,7 @@ def main():
     ap.add_argument("--lens", default=None, help="overhead camera calibration (default: the repo's sim/assets/so101_camera_rig.json)")
     ap.add_argument("--table-pose", default=str(REPO / "calibration/overhead_table_pose.json"))
     ap.add_argument("--floor-mm", type=float, default=5.0,
-                    help="lowest allowed hand point above the table (was 10 = rig.json table_floor_cm; 5 matches the "
-                         "replay's own floor guard, real/replay.py --floor-cm 0.5)")
+                    help="lowest allowed hand point above the table, mm")
     ap.add_argument("--midline-mm", type=float, default=None,
                     help="optional blanket rule: keep the TCP this far on its own side of x=0 (off by default; "
                          "the clearance check against the other arm replaces it)")
@@ -528,8 +526,6 @@ def main():
                     help="aim at the grasp-relevant part of your wrist: tilt as far as the arm's plane allows and the jaw line as seen from above exactly; only the jaw lean (one finger lower) is given up")
     ap.add_argument("--reachable-orient", action="store_true",
                     help="aim only at the part of the demo orientation a 5-DOF arm can reach (pitch + twist; the sideways yaw out of the arm's plane is dropped). Experimental: on 06-26-51 it cut twist error 0.5 -> 0.1 deg but raised the worst TCP miss 62 -> 160 mm")
-    ap.add_argument("--export-web", action="store_true",
-                    help="write data for the in-browser replay (viewer/replay.html) instead of needing a video")
     ap.add_argument("--no-video", action="store_true")
     ap.add_argument("--tag", default="", help="suffix for output files, e.g. _shifted")
     args = ap.parse_args()
@@ -990,7 +986,7 @@ def main():
 
     plan = {
         "episode": args.episode, "side": args.side,
-        "units": "joints: pi_sim / so101_real units (deg, rig joint offsets applied by the runner's Arm.to_raw); gripper 0=closed..100=open",
+        "units": "joints: pi_sim / so101_real units (deg; apply your arm's calibration offsets when sending them to the servos); gripper 0=closed..100=open",
         "joint_order": ["shoulder_pan", "shoulder_lift", "elbow_flex", "wrist_flex", "wrist_roll", "gripper"],
         "hz": hz, "recommended_time_scale": round(slow, 2),
         "t": [round(r["t"], 4) for r in rows],
@@ -1025,25 +1021,10 @@ def main():
         "notes": [
             "Targets were clamped where flagged (midline, floor); see checks.",
             "Gripper units are approximate: finger offset -> jaw angle via CAD lever, sim mapping -10..100 deg.",
-            "Collision (arm-arm, mount post, box) and tracking checks are left to the rig's safety.Guard preflight.",
+            "Collision (mount post, box) and tracking checks are left to the safety checks of whatever runs the plan.",
         ],
     }
     (ep / f"plan_{args.side}{args.tag}.json").write_text(json.dumps(plan, indent=1))
-    if args.export_web:
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        try:
-            import web_export
-        except ImportError:
-            raise SystemExit("--export-web needs umi/web_export.py (the UMI Studio viewer), which isn't in this repo")
-        meta = json.loads((ep / "meta.json").read_text())
-        cap_dir = (REPO / meta["overhead_video"]).parent
-        web_dir = web_export.export_episode(
-            arm, ep, cap_dir, args.side, np.array(plan["t"]), float(t[i0]), Q5, grip,
-            [r["demo_tcp"] for r in rows], [r["tcp_reached"] for r in rows], [r["tracked"] for r in rows],
-            load_overhead(args.lens), {"checks": plan["checks"], "clamped_spans_s": plan.get("clamped_spans_s", []),
-                                       "recommended_time_scale": plan["recommended_time_scale"]},
-            args.other_pose, finder_cls=PropFinder)
-        print(f"  browser replay data: {web_dir.relative_to(REPO)}/ (open viewer/replay.html?ep={args.episode}&side={args.side})")
     c = plan["checks"]
     print(f"\nplan_{args.side}{args.tag}.json: {len(rows)} frames @ {hz:.0f} Hz ({rows[-1]['t']:.1f} s demo)")
     print(f"  IK TCP error: median {c['ik_pos_err_mm']['median']} mm, p95 {c['ik_pos_err_mm']['p95']} mm, max {c['ik_pos_err_mm']['max']} mm "

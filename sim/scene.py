@@ -25,10 +25,10 @@ ARM_X = 0.116                    # was 0.18 before the mount (0.36 m between arm
 ARM_Y = -0.22                    # arm base-body origin; its hole centre is 21.245 mm forward of this
 ARM_Z = 0.0072                   # the arms stand on the 7.2 mm arm_base plates
 ARM_SHIFT = 0.18 - ARM_X         # how far each arm moved toward the middle; task layouts follow it
-# Measured per-arm pedestal corrections (robots/so101/calibration, adopted with the camera refit): optional file
+# Measured per-arm pedestal corrections (from the reference rig's calibration): optional file
 # assets/so101_kinematics.json {"left": {"pedestal_shift_cm": [x, y, z]}, "right": {...}} or PI_SIM_KINEMATICS=<file>.
 # Absent -> no shift (the nominal mount layout). The per-joint offsets of the same fit live on the REAL side
-# (rig.json joint_offsets_deg: sim = real + offset), not here.
+# (applied by whatever drives the real arm: sim = real + offset), not here.
 KINEMATICS = Path(os.environ.get("PI_SIM_KINEMATICS", "")) if os.environ.get("PI_SIM_KINEMATICS") else None
 
 

@@ -91,9 +91,8 @@ _WARNED = set()
 
 
 def _warn_if_not_current(raw, source):
-    """Since 2026-11-13 every sim must use the real-rig calibration (robots/so101/calibration, cameras 6349a0 +
-    kinematics bb1b28; user: "future runs need to use this calibration setup"). The default rig and
-    rig_tools/data/so101_camera_rig.active.json carry its tag; anything else gets a loud warning (once per file)."""
+    """Warn (once per file) when a camera rig doesn't carry the default rig's calibration tag: plans and sims
+    should all use the same calibration."""
     import sys
     try:
         current = json.loads(DEFAULT_RIG.read_text()).get("calibration_tag")
@@ -104,8 +103,7 @@ def _warn_if_not_current(raw, source):
         if key not in _WARNED:
             _WARNED.add(key)
             print(f"WARNING pi_sim: camera rig {source if isinstance(source, (str, Path)) else '(dict)'} is NOT the "
-                  f"current calibration ({current}). Do not train on it -- use the default rig or "
-                  f"rig_tools/data/so101_camera_rig.active.json.", file=sys.stderr, flush=True)
+                  f"current calibration ({current}). Do not train on it -- use the default rig.", file=sys.stderr, flush=True)
 
 
 def load_camera_rig(source=None):
